@@ -17,14 +17,14 @@ User-Friendly Interface: Hacker-themed UI with Streamlit.
 
 # Clone the repository
 git clone https://github.com/ianmol13/Subdomain_enumeration_tool.git
-cd your-repo-name
+cd Subdomain_enumeration_tool
 
 # Install dependencies
 pip install -r requirements.txt
 
 🔧 Usage
 
-streamlit run app.py
+streamlit run Subdomain_Enumeration_Tool.py
 
 🛠 Techniques Used
 
