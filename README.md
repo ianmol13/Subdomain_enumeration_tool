@@ -16,7 +16,7 @@ User-Friendly Interface: Hacker-themed UI with Streamlit.
 ⚙️ Installation
 
 # Clone the repository
-git clone https://github.com/yourusername/your-repo-name.git
+git clone https://github.com/ianmol13/Subdomain_enumeration_tool.git
 cd your-repo-name
 
 # Install dependencies
