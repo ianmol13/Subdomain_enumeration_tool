@@ -11,7 +11,7 @@ from datetime import datetime
 # -----------------------------
 # Page config & styles
 # -----------------------------
-st.set_page_config(page_title="Subdomain Enumeration", page_icon="💀", layout="wide")
+st.set_page_config(page_title="Subdomain Enumeration", page_icon="", layout="wide")
 
 st.markdown(
     """
@@ -121,7 +121,7 @@ def log(msg):
 # -----------------------------
 # Sidebar: controls
 # -----------------------------
-st.sidebar.markdown("## ⚙️ Controls")
+st.sidebar.markdown("## Controls")
 domains_input = st.sidebar.text_area("Enter target domains (one per line)", help="e.g. example.com")
 domains = [d.strip() for d in domains_input.splitlines() if d.strip()]
 
@@ -130,7 +130,7 @@ use_sublister = st.sidebar.checkbox("Use Sublist3r (optional)", value=False)
 use_brute = st.sidebar.checkbox("Brute-force (requires common_subdomains.txt)", value=False)
 export_format = st.sidebar.selectbox("Export format", ["CSV", "JSON"])
 max_workers = st.sidebar.slider("Parallel workers", min_value=1, max_value=10, value=3)
-run_button = st.sidebar.button("🚀 Start Scan")
+run_button = st.sidebar.button(" Start Scan")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Quick tips:** do not scan unauthorized domains.\n\nUse public or authorized targets only.")
@@ -138,7 +138,7 @@ st.sidebar.markdown("**Quick tips:** do not scan unauthorized domains.\n\nUse pu
 # -----------------------------
 # Main layout: header + two columns
 # -----------------------------
-st.markdown("<div class='header'><h1>💀 Subdomain Enumeration Tool</h1><p>Hacker-style UI — results & logs</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='header'><h1> Subdomain Enumeration Tool</h1><p>Hacker-style UI — results & logs</p></div>", unsafe_allow_html=True)
 left_col, right_col = st.columns([2, 3])
 
 with left_col:
@@ -240,7 +240,7 @@ with tab_results:
         # selections & download
         fname = save_results_file(st.session_state.results, fmt=export_format.lower())
         with open(fname, "rb") as f:
-            st.download_button("📥 Download results", data=f, file_name=fname)
+            st.download_button(" Download results", data=f, file_name=fname)
         st.markdown("**Copy results (select & copy):**")
         st.text_area("All subdomains (select then copy)", value="\n".join(sorted(st.session_state.results)), height=180)
     else:
@@ -268,3 +268,4 @@ with tab_about:
     - Use responsibly and only against systems you have permission to test.
     - To include Sublist3r, add the Sublist3r folder to the repo.
     """)
+
