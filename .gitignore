@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+.env
+subdomains.txt
+subdomains_found.csv
+subdomains_found.json
+.DS_Store
+.idea/
+.vscode/
