@@ -138,7 +138,7 @@ st.sidebar.markdown("**Quick tips:** do not scan unauthorized domains.\n\nUse pu
 # -----------------------------
 # Main layout: header + two columns
 # -----------------------------
-st.markdown("<div class='header'><h1> Subdomain Enumeration Tool</h1><p>Hacker-style UI — results & logs</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='header'><h1> Subdomain Enumeration Tool</h1></div>", unsafe_allow_html=True)
 left_col, right_col = st.columns([2, 3])
 
 with left_col:
@@ -268,4 +268,5 @@ with tab_about:
     - Use responsibly and only against systems you have permission to test.
     - To include Sublist3r, add the Sublist3r folder to the repo.
     """)
+
 
