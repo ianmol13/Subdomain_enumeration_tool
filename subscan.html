@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SubScan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#080e12;
+  --surface:rgba(255,255,255,0.03);
+  --border:rgba(0,230,255,0.1);
+  --accent:#00e5ff;
+  --accent-glow:rgba(0,229,255,0.2);
+  --accent2:#40ffec;
+  --text:#d8f4f8;
+  --muted:rgba(200,240,248,0.35);
+  --danger:#ff4d6d;
+  --warn:#ffb020;
+  --mono:'DM Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+}
+
+html{height:100%}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  min-height:100vh;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ── BACKGROUND ── */
+.bg-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(120px);
+  pointer-events:none;
+  z-index:0;
+}
+.orb1{width:600px;height:600px;top:-200px;left:-200px;background:rgba(0,229,255,0.07)}
+.orb2{width:500px;height:500px;bottom:-150px;right:-100px;background:rgba(64,255,236,0.05)}
+.orb3{width:300px;height:300px;top:40%;left:55%;background:rgba(0,180,220,0.05)}
+
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;
+}
+
+/* ── WRAPPER ── */
+.page{
+  position:relative;z-index:1;
+  max-width:860px;
+  margin:0 auto;
+  padding:48px 24px 80px;
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+}
+
+/* ── HEADER ── */
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+
+.wordmark{
+  font-family:var(--display);
+  font-size:5.5rem;
+  line-height:0.9;
+  letter-spacing:0.01em;
+  color:#fff;
+  text-shadow:0 0 60px rgba(0,229,255,0.45);
+  user-select:none;
+}
+.wordmark span{color:var(--accent)}
+
+.header-right{
+  text-align:right;
+  font-size:0.68rem;
+  color:var(--muted);
+  line-height:1.9;
+  padding-bottom:6px;
+}
+
+.live-dot{
+  display:inline-block;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--accent2);
+  box-shadow:0 0 8px var(--accent2);
+  margin-right:5px;
+  animation:breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe{
+  0%,100%{opacity:1;box-shadow:0 0 8px var(--accent2)}
+  50%{opacity:0.4;box-shadow:0 0 2px var(--accent2)}
+}
+
+/* ── DIVIDER ── */
+.rule{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.3;
+}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.card-title{
+  font-size:0.62rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.card-title::before{
+  content:'';
+  display:block;
+  width:18px;height:1px;
+  background:var(--accent);
+  box-shadow:0 0 6px var(--accent);
+}
+
+/* ── DOMAIN INPUT ── */
+.domain-row{
+  display:flex;
+  gap:12px;
+  align-items:stretch;
+}
+
+.domain-input-wrap{
+  flex:1;
+  position:relative;
+}
+
+.domain-input-wrap::before{
+  content:'›_';
+  position:absolute;
+  left:16px;top:50%;
+  transform:translateY(-50%);
+  color:var(--accent);
+  font-size:0.85rem;
+  pointer-events:none;
+  font-weight:500;
+}
+
+input.domain-input{
+  width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.85rem;
+  padding:14px 16px 14px 44px;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+input.domain-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+input.domain-input::placeholder{color:var(--muted)}
+
+/* ── METHOD PILLS ── */
+.methods{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.method-pill{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 16px;
+  border-radius:99px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);
+  font-size:0.72rem;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all 0.18s;
+  user-select:none;
+}
+.method-pill:hover{border-color:rgba(0,229,255,0.4);color:var(--text)}
+.method-pill.on{
+  border-color:var(--accent);
+  background:rgba(0,229,255,0.1);
+  color:var(--accent);
+  box-shadow:0 0 16px rgba(0,229,255,0.15);
+}
+.pill-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  border:1px solid currentColor;
+  transition:background 0.18s;
+}
+.method-pill.on .pill-dot{background:currentColor}
+
+/* ── SCAN BUTTON ── */
+.btn-scan{
+  background:var(--accent);
+  color:#04111a;
+  border:none;
+  border-radius:10px;
+  font-family:var(--display);
+  font-size:1.3rem;
+  letter-spacing:0.08em;
+  padding:0 32px;
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+  position:relative;
+  overflow:hidden;
+  min-width:130px;
+}
+.btn-scan::after{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+}
+.btn-scan:hover{
+  background:#22eeff;
+  box-shadow:0 8px 32px rgba(0,229,255,0.45);
+  transform:translateY(-1px);
+}
+.btn-scan:active{transform:translateY(0);box-shadow:none}
+.btn-scan:disabled{
+  background:rgba(0,229,255,0.25);
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+
+/* ── PROGRESS ── */
+.progress-wrap{display:none;margin-top:20px}
+.progress-wrap.show{display:block}
+
+.progress-meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:0.65rem;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.progress-track{
+  height:2px;
+  background:rgba(255,255,255,0.06);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:99px;
+  transition:width 0.4s ease;
+  box-shadow:0 0 12px rgba(0,229,255,0.55);
+}
+
+/* ── STATS ROW ── */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  transition:border-color 0.3s,box-shadow 0.3s;
+  backdrop-filter:blur(10px);
+}
+.stat.lit{
+  border-color:rgba(0,229,255,0.3);
+  box-shadow:0 4px 24px rgba(0,229,255,0.1);
+}
+.stat-n{
+  font-family:var(--display);
+  font-size:2.8rem;
+  line-height:1;
+  color:#fff;
+  transition:color 0.3s;
+}
+.stat.lit .stat-n{
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(0,229,255,0.45);
+}
+.stat-k{
+  font-size:0.6rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* ── RESULTS ── */
+.results-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.results-header .card-title{margin-bottom:0;flex:1}
+
+.filter-input{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.72rem;
+  padding:7px 12px;
+  outline:none;
+  width:180px;
+  transition:border-color 0.18s;
+}
+.filter-input:focus{border-color:var(--accent)}
+.filter-input::placeholder{color:var(--muted)}
+
+.btn-export{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:0.7rem;
+  padding:7px 14px;
+  cursor:pointer;
+  transition:all 0.18s;
+}
+.btn-export:hover{border-color:var(--accent2);color:var(--accent2)}
+
+/* ── TABLE ── */
+.table-shell{
+  max-height:360px;
+  overflow-y:auto;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px}
+
+table{width:100%;border-collapse:collapse;font-size:0.76rem}
+
+thead{position:sticky;top:0;background:#0a1318;z-index:5}
+thead th{
+  padding:10px 14px;
+  text-align:left;
+  font-size:0.6rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+  font-weight:400;
+}
+
+tbody tr{
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  transition:background 0.12s;
+}
+tbody tr:hover{background:rgba(0,229,255,0.05)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:9px 14px;vertical-align:middle}
+
+.td-idx{color:var(--muted);font-size:0.65rem;width:40px}
+.td-host{color:var(--accent2);font-weight:500;font-size:0.8rem}
+
+.src-tag{
+  display:inline-block;
+  padding:2px 9px;
+  border-radius:4px;
+  font-size:0.6rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  font-weight:500;
+}
+.src-crtsh{background:rgba(0,229,255,0.12);color:#00e5ff}
+.src-brute{background:rgba(255,176,32,0.12);color:var(--warn)}
+.src-sublister{background:rgba(64,255,236,0.1);color:#40ffec}
+
+/* ── EMPTY STATE ── */
+.empty{
+  padding:60px 20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:0.78rem;
+  line-height:2;
+}
+.empty-glyph{
+  font-family:var(--display);
+  font-size:5rem;
+  display:block;
+  opacity:0.07;
+  margin-bottom:8px;
+  letter-spacing:0.1em;
+}
+
+/* ── ALERT ── */
+.alert{
+  padding:12px 16px;
+  border-radius:8px;
+  font-size:0.75rem;
+  margin-bottom:16px;
+  display:none;
+}
+.alert.show{display:block}
+.alert-err{background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:var(--danger)}
+.alert-ok{background:rgba(64,255,236,0.08);border:1px solid rgba(64,255,236,0.25);color:var(--accent2)}
+
+/* ── LOGS ── */
+.log-box{
+  max-height:200px;
+  overflow-y:auto;
+  padding:4px 0;
+}
+.log-entry{
+  display:flex;
+  gap:14px;
+  padding:5px 2px;
+  font-size:0.7rem;
+  line-height:1.4;
+  border-bottom:1px solid rgba(255,255,255,0.025);
+}
+.log-entry:last-child{border-bottom:none}
+.log-t{color:var(--muted);flex-shrink:0;min-width:75px}
+.log-m{flex:1}
+.log-ok{color:var(--accent2)}
+.log-err{color:var(--danger)}
+.log-info{color:var(--text)}
+.log-warn{color:var(--warn)}
+
+/* ── FOOTER ── */
+footer{
+  font-size:0.62rem;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:8px;
+}
+
+/* ── ANIMATIONS ── */
+.page>*{animation:fadein 0.6s ease both}
+.page>*:nth-child(1){animation-delay:0s}
+.page>*:nth-child(2){animation-delay:0.05s}
+.page>*:nth-child(3){animation-delay:0.1s}
+.page>*:nth-child(4){animation-delay:0.15s}
+.page>*:nth-child(5){animation-delay:0.2s}
+.page>*:nth-child(6){animation-delay:0.25s}
+.page>*:nth-child(7){animation-delay:0.3s}
+
+@keyframes fadein{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:none}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .wordmark{font-size:3.5rem}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .domain-row{flex-direction:column}
+  .btn-scan{padding:14px;width:100%}
+  .header-right{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="wordmark">SUB<span>SCAN</span></div>
+    <div class="header-right">
+      <div><span class="live-dot"></span>SYSTEM ONLINE</div>
+      <div id="clock">-- : -- : --  UTC</div>
+      <div>RECON FRAMEWORK v2.0</div>
+    </div>
+  </header>
+
+  <div class="rule"></div>
+
+  <!-- ALERT -->
+  <div class="alert alert-err" id="alertBox"></div>
+
+  <!-- SCAN CARD -->
+  <div class="card">
+    <div class="card-title">Target &amp; Configuration</div>
+
+    <div class="domain-row">
+      <div class="domain-input-wrap">
+        <input class="domain-input" id="domainInput"
+          type="text" placeholder="example.com"
+          autocomplete="off" spellcheck="false"/>
+      </div>
+      <button class="btn-scan" id="scanBtn" onclick="startScan()">SCAN</button>
+    </div>
+
+    <!-- Method pills -->
+    <div class="methods">
+      <div class="method-pill on" id="pill-crtsh" onclick="togglePill(this,'crtsh')">
+        <div class="pill-dot"></div> crt.sh passive
+      </div>
+      <div class="method-pill" id="pill-brute" onclick="togglePill(this,'brute')">
+        <div class="pill-dot"></div> DNS brute-force
+      </div>
+      <div class="method-pill" id="pill-sublister" onclick="togglePill(this,'sublister')">
+        <div class="pill-dot"></div> Sublist3r
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-meta">
+        <span id="progressLabel">Scanning…</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat" id="s-found">
+      <div class="stat-n" id="n-found">0</div>
+      <div class="stat-k">Subdomains</div>
+    </div>
+    <div class="stat" id="s-domains">
+      <div class="stat-n" id="n-domains">0</div>
+      <div class="stat-k">Domains</div>
+    </div>
+    <div class="stat" id="s-sources">
+      <div class="stat-n" id="n-sources">0</div>
+      <div class="stat-k">Sources</div>
+    </div>
+    <div class="stat" id="s-time">
+      <div class="stat-n" id="n-time">0s</div>
+      <div class="stat-k">Elapsed</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card">
+    <div class="results-header">
+      <div class="card-title">Discovered Subdomains</div>
+      <input class="filter-input" id="filterInput"
+        type="text" placeholder="filter…" oninput="renderTable()"/>
+      <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+    </div>
+
+    <div class="table-shell">
+      <div class="empty" id="emptyState">
+        <span class="empty-glyph">SUBSCAN</span>
+        Enter a domain above and hit SCAN
+      </div>
+      <table id="resultsTable" style="display:none">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Subdomain</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="card">
+    <div class="card-title">Activity Log</div>
+    <div class="log-box" id="logBox">
+      <div class="log-entry">
+        <span class="log-t">--:--:--</span>
+        <span class="log-m log-info">Awaiting target…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>Only scan systems you own or have explicit permission to test.</span>
+    <span id="resultCount">0 results</span>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+const S = {
+  rows: [],
+  methods: { crtsh: true, brute: false, sublister: false },
+  scanning: false,
+  t0: null,
+  timerID: null,
+};
+
+/* ═══════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════ */
+(function tick() {
+  const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
+  document.getElementById('clock').textContent = (t ? t[1] : '--:--:--') + '  UTC';
+  setTimeout(tick, 1000);
+})();
+
+/* ═══════════════════════════════════════
+   PILL TOGGLE
+═══════════════════════════════════════ */
+function togglePill(el, key) {
+  el.classList.toggle('on');
+  S.methods[key] = el.classList.contains('on');
+}
+
+/* ═══════════════════════════════════════
+   ALERT
+═══════════════════════════════════════ */
+function showAlert(msg, type = 'err') {
+  const box = document.getElementById('alertBox');
+  box.textContent = msg;
+  box.className = `alert alert-${type} show`;
+  setTimeout(() => box.classList.remove('show'), 4000);
+}
+
+/* ═══════════════════════════════════════
+   LOG
+═══════════════════════════════════════ */
+function addLog(msg, type = 'info') {
+  const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
+  const ts = t ? t[1] : '--:--:--';
+  const box = document.getElementById('logBox');
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-t">${ts}</span><span class="log-m log-${type}">${esc(msg)}</span>`;
+  box.prepend(div);
+  if (box.children.length > 120) box.lastChild.remove();
+}
+
+/* ═══════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════ */
+function setProgress(pct, label) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = Math.round(pct) + '%';
+  if (label) document.getElementById('progressLabel').textContent = label;
+}
+
+/* ═══════════════════════════════════════
+   RENDER TABLE
+═══════════════════════════════════════ */
+function renderTable() {
+  const f = document.getElementById('filterInput').value.toLowerCase();
+  const rows = f ? S.rows.filter(r => r.sub.toLowerCase().includes(f)) : S.rows;
+
+  const empty = document.getElementById('emptyState');
+  const tbl   = document.getElementById('resultsTable');
+
+  if (!S.rows.length) {
+    empty.style.display = 'block';
+    tbl.style.display   = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbl.style.display   = 'table';
+
+  document.getElementById('tbody').innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="td-idx">${i + 1}</td>
+      <td class="td-host">${esc(r.sub)}</td>
+      <td><span class="src-tag src-${esc(r.src)}">${esc(r.src)}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('resultCount').textContent =
+    rows.length + ' result' + (rows.length !== 1 ? 's' : '');
+}
+
+/* ═══════════════════════════════════════
+   STATS
+═══════════════════════════════════════ */
+function updateStats() {
+  const n       = S.rows.length;
+  const domains = new Set(S.rows.map(r => r.domain)).size;
+  const srcs    = new Set(S.rows.map(r => r.src)).size;
+
+  animNum('n-found',   n);
+  animNum('n-domains', domains);
+  animNum('n-sources', srcs);
+
+  ['s-found', 's-domains', 's-sources'].forEach(id =>
+    document.getElementById(id).classList.toggle('lit', n > 0)
+  );
+}
+
+function animNum(id, target) {
+  const el  = document.getElementById(id);
+  const cur = parseInt(el.textContent) || 0;
+  if (cur === target) return;
+  const step = Math.max(1, Math.ceil(Math.abs(target - cur) / 8));
+  el.textContent = Math.min(cur + step, target);
+  if (parseInt(el.textContent) < target) setTimeout(() => animNum(id, target), 40);
+}
+
+/* ═══════════════════════════════════════
+   EXPORT CSV
+═══════════════════════════════════════ */
+function exportCSV() {
+  if (!S.rows.length) { showAlert('No results to export yet.', 'err'); return; }
+  const csv = 'Subdomain,Source,Domain\n' +
+    S.rows.map(r => `${r.sub},${r.src},${r.domain}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `subscan_${Date.now()}.csv`;
+  a.click();
+  addLog(`Exported ${S.rows.length} rows as CSV`, 'ok');
+}
+
+/* ═══════════════════════════════════════
+   SCAN — calls Streamlit Python backend
+   via postMessage / query param approach
+═══════════════════════════════════════ */
+function startScan() {
+  const domain = document.getElementById('domainInput').value.trim().toLowerCase();
+  if (!domain) { showAlert('Enter a target domain first.', 'err'); return; }
+  if (S.scanning) return;
+
+  const active = Object.entries(S.methods).filter(([, v]) => v).map(([k]) => k);
+  if (!active.length) { showAlert('Select at least one scan method.', 'err'); return; }
+
+  /* Reset */
+  S.rows = [];
+  S.scanning = true;
+  S.t0 = Date.now();
+  renderTable();
+  updateStats();
+
+  /* UI */
+  const btn = document.getElementById('scanBtn');
+  btn.disabled   = true;
+  btn.textContent = '…';
+  document.getElementById('progressWrap').classList.add('show');
+  setProgress(5, 'Sending to backend…');
+  addLog(`Target: ${domain} | Methods: ${active.join(', ')}`, 'info');
+
+  /* Elapsed timer */
+  S.timerID = setInterval(() => {
+    const s = ((Date.now() - S.t0) / 1000).toFixed(1);
+    document.getElementById('n-time').textContent = s + 's';
+    document.getElementById('s-time').classList.add('lit');
+  }, 300);
+
+  /*
+   * ── HOW THE BACKEND CALL WORKS ──────────────────────────────────────────
+   * We are running inside a Streamlit components.html() iframe.
+   * We communicate with Python by reloading the Streamlit app with query
+   * params (?scan=1&domain=...&methods=...). The Python script detects
+   * these params, runs the scan, and posts a message back via postMessage.
+   * The listener below receives the JSON result and populates the UI.
+   *
+   * This is the cleanest zero-dependency way to call Python from inside
+   * a Streamlit HTML component without needing a separate Flask server.
+   * ────────────────────────────────────────────────────────────────────── */
+
+  /* Listen for the result posted back from Python */
+  window.addEventListener('message', handleBackendResult, { once: true });
+
+  /* Trigger the Python scan by navigating the parent Streamlit window */
+  const params = new URLSearchParams({
+    scan:    '1',
+    domain:  domain,
+    methods: active.join(','),
+    workers: '5',
+  });
+
+  /* Post to Streamlit parent to reload with these query params */
+  window.parent.postMessage({ type: 'SUBSCAN_START', params: params.toString() }, '*');
+
+  /* Fallback: if no backend available (standalone HTML), run demo after 800ms */
+  S._fallbackTimer = setTimeout(() => {
+    addLog('No backend response — running demo mode.', 'warn');
+    runDemo(domain, active);
+  }, 800);
+}
+
+/* ═══════════════════════════════════════
+   HANDLE BACKEND RESULT (from Python)
+═══════════════════════════════════════ */
+function handleBackendResult(event) {
+  if (!event.data || event.data.type !== 'SUBSCAN_RESULT') return;
+  clearTimeout(S._fallbackTimer);
+
+  const data = event.data.data;
+
+  /* Populate results */
+  (data.results || []).forEach(r => {
+    S.rows.push({ sub: r.subdomain, src: r.source, domain: r.domain });
+  });
+
+  /* Populate logs */
+  (data.logs || []).forEach(line => {
+    const type = line.includes('ERROR') ? 'err'
+               : line.includes('complete') || line.includes('Scan complete') ? 'ok'
+               : 'info';
+    addLog(line, type);
+  });
+
+  renderTable();
+  updateStats();
+  finishScan(data.elapsed || 0);
+}
+
+/* ═══════════════════════════════════════
+   DEMO MODE (runs when no backend)
+   Simulates results for UI preview /
+   standalone HTML usage on GitHub Pages
+═══════════════════════════════════════ */
+function runDemo(domain, methods) {
+  const wordlist = [
+    'www','mail','api','dev','staging','vpn','admin','portal','cdn',
+    'shop','blog','docs','git','ci','jenkins','test','uat','beta',
+    'secure','app','m','static','assets','auth','sso','smtp','webmail',
+    'ftp','backup','db','cloud','k8s','grafana','kibana','elastic',
+    'intranet','corp','sandbox','demo','preview','alpha','prod','legacy',
+    'ns1','ns2','mx','remote',
+  ];
+
+  const total = methods.length * wordlist.length;
+  let done = 0, mIdx = 0, wIdx = 0;
+
+  function step() {
+    if (mIdx >= methods.length) { finishScan(); return; }
+
+    const method = methods[mIdx];
+    const word   = wordlist[wIdx];
+    const sub    = `${word}.${domain}`;
+
+    if (Math.random() > 0.32 && !S.rows.find(r => r.sub === sub)) {
+      S.rows.push({ sub, src: method, domain });
+      renderTable();
+      updateStats();
+    }
+
+    done++;
+    setProgress((done / total) * 100, `[${method}] checking ${word}.${domain}`);
+
+    wIdx++;
+    if (wIdx >= wordlist.length) {
+      wIdx = 0;
+      addLog(`[${method}] scan complete on ${domain}`, 'ok');
+      mIdx++;
+    }
+
+    if (mIdx < methods.length) setTimeout(step, 22);
+    else finishScan();
+  }
+
+  setTimeout(step, 300);
+}
+
+/* ═══════════════════════════════════════
+   FINISH
+═══════════════════════════════════════ */
+function finishScan(elapsed) {
+  clearInterval(S.timerID);
+  S.scanning = false;
+
+  const t = elapsed !== undefined
+    ? elapsed + 's'
+    : ((Date.now() - S.t0) / 1000).toFixed(1) + 's';
+
+  document.getElementById('n-time').textContent = t;
+  setProgress(100, 'Complete');
+
+  setTimeout(() => {
+    document.getElementById('progressWrap').classList.remove('show');
+    const btn = document.getElementById('scanBtn');
+    btn.disabled   = false;
+    btn.textContent = 'SCAN';
+  }, 1500);
+
+  addLog(`Done — ${S.rows.length} subdomains found in ${t}`, 'ok');
+  updateStats();
+}
+
+/* ═══════════════════════════════════════
+   UTIL
+═══════════════════════════════════════ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* Enter key triggers scan */
+document.getElementById('domainInput')
+  .addEventListener('keydown', e => { if (e.key === 'Enter') startScan(); });
+</script>
+</body>
+</html>
