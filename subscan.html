@@ -622,9 +622,9 @@ footer{
 </div><!-- /page -->
 
 <script>
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
+  
+/* STATE */
+  
 const S = {
   rows: [],
   methods: { crtsh: true, brute: false, sublister: false },
@@ -633,26 +633,23 @@ const S = {
   timerID: null,
 };
 
-/* ═══════════════════════════════════════
-   CLOCK
-═══════════════════════════════════════ */
+/*  CLOCK */
+  
 (function tick() {
   const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
   document.getElementById('clock').textContent = (t ? t[1] : '--:--:--') + '  UTC';
   setTimeout(tick, 1000);
 })();
 
-/* ═══════════════════════════════════════
-   PILL TOGGLE
-═══════════════════════════════════════ */
+/* PILL TOGGLE */
+  
 function togglePill(el, key) {
   el.classList.toggle('on');
   S.methods[key] = el.classList.contains('on');
 }
 
-/* ═══════════════════════════════════════
-   ALERT
-═══════════════════════════════════════ */
+/* ALERT */
+  
 function showAlert(msg, type = 'err') {
   const box = document.getElementById('alertBox');
   box.textContent = msg;
@@ -660,9 +657,8 @@ function showAlert(msg, type = 'err') {
   setTimeout(() => box.classList.remove('show'), 4000);
 }
 
-/* ═══════════════════════════════════════
-   LOG
-═══════════════════════════════════════ */
+/* LOG */
+  
 function addLog(msg, type = 'info') {
   const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
   const ts = t ? t[1] : '--:--:--';
@@ -674,18 +670,15 @@ function addLog(msg, type = 'info') {
   if (box.children.length > 120) box.lastChild.remove();
 }
 
-/* ═══════════════════════════════════════
-   PROGRESS
-═══════════════════════════════════════ */
+/*  PROGRESS  */
 function setProgress(pct, label) {
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressPct').textContent = Math.round(pct) + '%';
   if (label) document.getElementById('progressLabel').textContent = label;
 }
 
-/* ═══════════════════════════════════════
-   RENDER TABLE
-═══════════════════════════════════════ */
+/*  RENDER TABLE */
+  
 function renderTable() {
   const f = document.getElementById('filterInput').value.toLowerCase();
   const rows = f ? S.rows.filter(r => r.sub.toLowerCase().includes(f)) : S.rows;
@@ -713,9 +706,7 @@ function renderTable() {
     rows.length + ' result' + (rows.length !== 1 ? 's' : '');
 }
 
-/* ═══════════════════════════════════════
-   STATS
-═══════════════════════════════════════ */
+/*  STATS */
 function updateStats() {
   const n       = S.rows.length;
   const domains = new Set(S.rows.map(r => r.domain)).size;
@@ -739,9 +730,7 @@ function animNum(id, target) {
   if (parseInt(el.textContent) < target) setTimeout(() => animNum(id, target), 40);
 }
 
-/* ═══════════════════════════════════════
-   EXPORT CSV
-═══════════════════════════════════════ */
+/*  EXPORT CSV  */
 function exportCSV() {
   if (!S.rows.length) { showAlert('No results to export yet.', 'err'); return; }
   const csv = 'Subdomain,Source,Domain\n' +
@@ -753,10 +742,10 @@ function exportCSV() {
   addLog(`Exported ${S.rows.length} rows as CSV`, 'ok');
 }
 
-/* ═══════════════════════════════════════
-   SCAN — calls Streamlit Python backend
-   via postMessage / query param approach
-═══════════════════════════════════════ */
+/*  
+SCAN — calls Streamlit Python backend
+via postMessage / query param approach
+ */
 function startScan() {
   const domain = document.getElementById('domainInput').value.trim().toLowerCase();
   if (!domain) { showAlert('Enter a target domain first.', 'err'); return; }
@@ -788,16 +777,14 @@ function startScan() {
   }, 300);
 
   /*
-   * ── HOW THE BACKEND CALL WORKS ──────────────────────────────────────────
-   * We are running inside a Streamlit components.html() iframe.
-   * We communicate with Python by reloading the Streamlit app with query
-   * params (?scan=1&domain=...&methods=...). The Python script detects
-   * these params, runs the scan, and posts a message back via postMessage.
-   * The listener below receives the JSON result and populates the UI.
-   *
-   * This is the cleanest zero-dependency way to call Python from inside
-   * a Streamlit HTML component without needing a separate Flask server.
-   * ────────────────────────────────────────────────────────────────────── */
+    HOW THE BACKEND CALL WORKS 
+    We are running inside a Streamlit components.html() iframe.
+    We communicate with Python by reloading the Streamlit app with query
+    params (?scan=1&domain=...&methods=...). The Python script detects
+    these params, runs the scan, and posts a message back via postMessage.
+    The listener below receives the JSON result and populates the UI.
+    This is the cleanest zero-dependency way to call Python from inside a Streamlit HTML component without needing a separate Flask server.
+   */
 
   /* Listen for the result posted back from Python */
   window.addEventListener('message', handleBackendResult, { once: true });
@@ -820,9 +807,8 @@ function startScan() {
   }, 800);
 }
 
-/* ═══════════════════════════════════════
-   HANDLE BACKEND RESULT (from Python)
-═══════════════════════════════════════ */
+/*  HANDLE BACKEND RESULT (from Python)  */
+  
 function handleBackendResult(event) {
   if (!event.data || event.data.type !== 'SUBSCAN_RESULT') return;
   clearTimeout(S._fallbackTimer);
@@ -847,11 +833,11 @@ function handleBackendResult(event) {
   finishScan(data.elapsed || 0);
 }
 
-/* ═══════════════════════════════════════
+/* 
    DEMO MODE (runs when no backend)
-   Simulates results for UI preview /
-   standalone HTML usage on GitHub Pages
-═══════════════════════════════════════ */
+   Simulates results for UI preview / standalone HTML usage on GitHub Pages
+ */
+  
 function runDemo(domain, methods) {
   const wordlist = [
     'www','mail','api','dev','staging','vpn','admin','portal','cdn',
@@ -895,9 +881,8 @@ function runDemo(domain, methods) {
   setTimeout(step, 300);
 }
 
-/* ═══════════════════════════════════════
-   FINISH
-═══════════════════════════════════════ */
+/*  FINISH  */
+  
 function finishScan(elapsed) {
   clearInterval(S.timerID);
   S.scanning = false;
@@ -920,9 +905,7 @@ function finishScan(elapsed) {
   updateStats();
 }
 
-/* ═══════════════════════════════════════
-   UTIL
-═══════════════════════════════════════ */
+/*  UTIL */
 function esc(s) {
   return String(s)
     .replace(/&/g,'&amp;')
