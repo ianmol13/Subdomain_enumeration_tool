@@ -1,272 +1,187 @@
-# app.py — improved UI for Subdomain Enumeration Tool
+# Subdomain_Enumeration_Tool.py
+# Serves the custom HTML/CSS/JS frontend via Streamlit
+# and handles real scan requests from the UI via st.query_params / component messaging
+
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import dns.resolver
 import subprocess
 import pandas as pd
+import json
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import pathlib
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-# -----------------------------
-# Page config & styles
-# -----------------------------
-st.set_page_config(page_title="Subdomain Enumeration", page_icon="", layout="wide")
-
-st.markdown(
-    """
-    <style>
-    /* page background + main font */
-    .stApp { background: #020202; color: #00ff6a; font-family: 'Courier New', monospace; }
-
-    /* header */
-    .header { text-align: center; margin-bottom: 8px; }
-    .card { background:#071013; border:1px solid #00ff6a; padding:12px; border-radius:8px; }
-
-    /* sidebar tweaks */
-    .stSidebar { background: #060606; color: #00ff6a; }
-
-    /* buttons */
-    .stButton>button { background:#00ff6a; color:black; font-weight:bold; }
-    .stDownloadButton>button { background:#00ff6a; color:black; font-weight:bold; }
-
-    /* table header color */
-    .dataframe thead th { background: #001100; color: #00ff6a; }
-    </style>
-    """, unsafe_allow_html=True
+# ─────────────────────────────────────────
+# PAGE CONFIG  — must be first Streamlit call
+# ─────────────────────────────────────────
+st.set_page_config(
+    page_title="SubScan — Subdomain Enumeration",
+    page_icon="◈",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-# -----------------------------
-# Helper functions
-# -----------------------------
-def get_subdomains_crtsh(domain):
-    """Query crt.sh and return list of subdomains."""
+# Hide all Streamlit chrome (menu, footer, header, padding)
+st.markdown("""
+<style>
+#MainMenu, footer, header { visibility: hidden; }
+[data-testid="stAppViewContainer"] > .main { padding: 0 !important; }
+.block-container { padding: 0 !important; max-width: 100% !important; }
+[data-testid="collapsedControl"] { display: none; }
+</style>
+""", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────
+# BACKEND SCAN FUNCTIONS
+# ─────────────────────────────────────────
+
+def get_subdomains_crtsh(domain: str) -> list:
+    """Passive recon via crt.sh SSL certificate transparency logs."""
     url = f"https://crt.sh/?q=%25.{domain}&output=json"
     try:
-        r = requests.get(url, timeout=15)
+        r = requests.get(url, timeout=20)
         if r.status_code != 200:
             return []
-        data = r.json()
-        # name_value can contain multiple names separated by \n
         results = set()
-        for entry in data:
-            nv = entry.get("name_value", "")
-            for n in nv.split("\n"):
-                n = n.strip()
-                if n:
+        for entry in r.json():
+            for n in entry.get("name_value", "").split("\n"):
+                n = n.strip().lstrip("*.")
+                if n and "." in n:
                     results.add(n)
-        return list(results)
+        return sorted(results)
     except Exception:
         return []
 
-def get_subdomains_sublister(domain):
-    """Run Sublist3r if present; returns list."""
-    script_path = "Sublist3r/sublist3r.py"
-    if not os.path.exists(script_path):
+
+def get_subdomains_sublister(domain: str) -> list:
+    """Run Sublist3r if the folder exists in the repo."""
+    script_path = pathlib.Path(__file__).parent / "Sublist3r" / "sublist3r.py"
+    if not script_path.exists():
         return []
     try:
-        result = subprocess.run(["python", script_path, "-d", domain, "-o", "subdomains.txt"],
-                                capture_output=True, text=True, timeout=120)
-        # read output file
-        if os.path.exists("subdomains.txt"):
-            with open("subdomains.txt", "r") as f:
-                return [l.strip() for l in f if l.strip()]
-        # fallback parse stdout
-        return [l.strip() for l in result.stdout.splitlines() if l.strip()]
+        out_file = pathlib.Path(__file__).parent / "subdomains_tmp.txt"
+        subprocess.run(
+            ["python", str(script_path), "-d", domain, "-o", str(out_file)],
+            capture_output=True, text=True, timeout=120
+        )
+        if out_file.exists():
+            lines = [l.strip() for l in out_file.read_text().splitlines() if l.strip()]
+            out_file.unlink(missing_ok=True)
+            return lines
     except Exception:
-        return []
+        pass
+    return []
 
-def brute_force_subdomains(domain, wordlist="common_subdomains.txt"):
-    """Try resolving common names from wordlist."""
+
+def brute_force_subdomains(domain: str) -> list:
+    """DNS brute-force using common_subdomains.txt wordlist."""
+    wordlist_path = pathlib.Path(__file__).parent / "common_subdomains.txt"
+    if not wordlist_path.exists():
+        return []
     found = []
     resolver = dns.resolver.Resolver()
+    resolver.lifetime = 3
     try:
-        with open(wordlist, "r") as f:
-            for line in f:
-                sub = line.strip()
-                if not sub:
-                    continue
-                full = f"{sub}.{domain}"
-                try:
-                    resolver.resolve(full, "A", lifetime=3)
-                    found.append(full)
-                except Exception:
-                    pass
-    except FileNotFoundError:
-        # the UI will show the message
+        for line in wordlist_path.read_text().splitlines():
+            word = line.strip()
+            if not word:
+                continue
+            fqdn = f"{word}.{domain}"
+            try:
+                resolver.resolve(fqdn, "A")
+                found.append(fqdn)
+            except Exception:
+                pass
+    except Exception:
         pass
     return found
 
-def save_results_file(subdomains, fmt="csv"):
-    df = pd.DataFrame({"Subdomain": list(subdomains)})
-    fname = f"subdomains_found.{fmt}"
-    if fmt == "csv":
-        df.to_csv(fname, index=False)
-    else:
-        df.to_json(fname, orient="records")
-    return fname
 
-# -----------------------------
-# Session state init
-# -----------------------------
-if "results" not in st.session_state:
-    st.session_state.results = set()
-if "logs" not in st.session_state:
-    st.session_state.logs = []
+def run_scan(domain: str, methods: list, workers: int = 3) -> dict:
+    """
+    Run requested scan methods in parallel.
+    Returns dict with results list and log list.
+    """
+    results = []
+    logs = []
+    seen = set()
+    t0 = datetime.utcnow()
 
-def log(msg):
-    timestamp = datetime.utcnow().strftime("%H:%M:%S")
-    st.session_state.logs.append(f"[{timestamp} UTC] {msg}")
+    logs.append(f"[{t0.strftime('%H:%M:%S')}] Scan started — target: {domain}")
 
-# -----------------------------
-# Sidebar: controls
-# -----------------------------
-st.sidebar.markdown("## Controls")
-domains_input = st.sidebar.text_area("Enter target domains (one per line)", help="e.g. example.com")
-domains = [d.strip() for d in domains_input.splitlines() if d.strip()]
+    tasks = []
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        if "crtsh" in methods:
+            tasks.append(("crtsh", executor.submit(get_subdomains_crtsh, domain)))
+        if "sublister" in methods:
+            tasks.append(("sublister", executor.submit(get_subdomains_sublister, domain)))
+        if "brute" in methods:
+            tasks.append(("brute", executor.submit(brute_force_subdomains, domain)))
 
-use_crtsh = st.sidebar.checkbox("Use crt.sh (passive)", value=True)
-use_sublister = st.sidebar.checkbox("Use Sublist3r (optional)", value=False)
-use_brute = st.sidebar.checkbox("Brute-force (requires common_subdomains.txt)", value=False)
-export_format = st.sidebar.selectbox("Export format", ["CSV", "JSON"])
-max_workers = st.sidebar.slider("Parallel workers", min_value=1, max_value=10, value=3)
-run_button = st.sidebar.button(" Start Scan")
+        for method, fut in tasks:
+            try:
+                found = fut.result()
+            except Exception as e:
+                logs.append(f"[ERROR] {method}: {e}")
+                found = []
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Quick tips:** do not scan unauthorized domains.\n\nUse public or authorized targets only.")
+            new_count = 0
+            for sub in found:
+                if sub not in seen:
+                    seen.add(sub)
+                    results.append({"subdomain": sub, "source": method, "domain": domain})
+                    new_count += 1
 
-# -----------------------------
-# Main layout: header + two columns
-# -----------------------------
-st.markdown("<div class='header'><h1> Subdomain Enumeration Tool</h1></div>", unsafe_allow_html=True)
-left_col, right_col = st.columns([2, 3])
+            ts = datetime.utcnow().strftime("%H:%M:%S")
+            logs.append(f"[{ts}] [{method}] {domain} → {new_count} new subdomains")
 
-with left_col:
-    st.markdown("<div class='card'><b>Scan Controls</b></div>", unsafe_allow_html=True)
-    st.write("")  # spacing
-    st.markdown("**Search / Filter results**")
-    search_term = st.text_input("Filter subdomains contains", value="")
-    sort_asc = st.checkbox("Sort alphabetically", value=True)
+    elapsed = (datetime.utcnow() - t0).total_seconds()
+    logs.append(f"[{datetime.utcnow().strftime('%H:%M:%S')}] Scan complete — {len(results)} total in {elapsed:.1f}s")
 
-with right_col:
-    st.markdown("<div class='card'><b>Summary</b></div>", unsafe_allow_html=True)
-    total_count = len(st.session_state.results)
-    st.metric("Total subdomains found", total_count)
-    last_run = st.session_state.logs[-1] if st.session_state.logs else "No runs yet"
-    st.caption(f"Last log: {last_run}")
-
-# -----------------------------
-# Tabs for results / logs / about
-# -----------------------------
-tab_results, tab_logs, tab_about = st.tabs(["Results", "Logs", "About"])
-
-# -----------------------------
-# Run the scan when button pressed
-# -----------------------------
-if run_button:
-    if not domains:
-        st.sidebar.error("Please enter at least one domain.")
-    else:
-        st.session_state.results = set()   # reset
-        st.session_state.logs = []
-        total_tasks = len(domains) * ((1 if use_crtsh else 0) + (1 if use_sublister else 0) + (1 if use_brute else 0))
-        progress = st.progress(0)
-        completed = 0
-        log("Scan started")
-        futures = []
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # schedule tasks
-            for domain in domains:
-                if use_crtsh:
-                    futures.append(executor.submit(("crtsh", domain), get_subdomains_crtsh, domain))
-                if use_sublister:
-                    futures.append(executor.submit(("sublister", domain), get_subdomains_sublister, domain))
-                if use_brute:
-                    futures.append(executor.submit(("brute", domain), brute_force_subdomains, domain))
-            # NOTE: above use of executor.submit with tuple label won't work; instead schedule without label and handle mapping below
-
-        # Because we want to update progress as each domain-method completes, reimplement scheduling properly:
-        st.session_state.logs = []
-        st.session_state.results = set()
-        total_tasks = 0
-        tasks = []
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # build task list properly
-            for domain in domains:
-                if use_crtsh:
-                    tasks.append(("crtsh", domain, executor.submit(get_subdomains_crtsh, domain)))
-                    total_tasks += 1
-                if use_sublister:
-                    tasks.append(("sublister", domain, executor.submit(get_subdomains_sublister, domain)))
-                    total_tasks += 1
-                if use_brute:
-                    tasks.append(("brute", domain, executor.submit(brute_force_subdomains, domain)))
-                    total_tasks += 1
-
-            # iterate as completed
-            done = 0
-            for label, domain, fut in tasks:
-                try:
-                    result = fut.result()
-                except Exception as e:
-                    result = []
-                    log(f"ERROR {label} {domain}: {e}")
-                # update results and logs
-                if result:
-                    added_before = len(st.session_state.results)
-                    st.session_state.results.update(result)
-                    added_after = len(st.session_state.results)
-                    new = added_after - added_before
-                    log(f"[{label}] {domain} -> {new} new subdomains")
-                else:
-                    log(f"[{label}] {domain} -> 0")
-                done += 1
-                progress.progress(int(done / total_tasks * 100))
-        progress.empty()
-        log("Scan completed")
-        st.success("Scan finished!")
-
-# -----------------------------
-# Results Tab
-# -----------------------------
-with tab_results:
-    st.markdown("### Results")
-    if st.session_state.results:
-        df = pd.DataFrame({"Subdomain": list(st.session_state.results)})
-        if search_term:
-            df = df[df["Subdomain"].str.contains(search_term, case=False, na=False)]
-        df = df.sort_values("Subdomain", ascending=sort_asc).reset_index(drop=True)
-        st.dataframe(df, use_container_width=True)
-        # selections & download
-        fname = save_results_file(st.session_state.results, fmt=export_format.lower())
-        with open(fname, "rb") as f:
-            st.download_button(" Download results", data=f, file_name=fname)
-        st.markdown("**Copy results (select & copy):**")
-        st.text_area("All subdomains (select then copy)", value="\n".join(sorted(st.session_state.results)), height=180)
-    else:
-        st.info("No subdomains found yet. Start a scan to populate results.")
-
-# -----------------------------
-# Logs Tab
-# -----------------------------
-with tab_logs:
-    st.markdown("### Logs (live)")
-    if st.session_state.logs:
-        # show latest first
-        for line in reversed(st.session_state.logs[-500:]):
-            st.markdown(f"<pre style='color:#00ff6a; background:#010101; padding:6px'>{line}</pre>", unsafe_allow_html=True)
-    else:
-        st.info("No logs yet. Run a scan to see live logs here.")
-
-# -----------------------------
-# About Tab
-# -----------------------------
-with tab_about:
-    st.markdown("### About this app")
-    st.markdown("""
-    - Built with Streamlit — improved UI, progress, logs, and filters.
-    - Use responsibly and only against systems you have permission to test.
-    - To include Sublist3r, add the Sublist3r folder to the repo.
-    """)
+    return {"results": results, "logs": logs, "elapsed": round(elapsed, 1)}
 
 
+# ─────────────────────────────────────────
+# HANDLE SCAN REQUEST FROM FRONTEND
+# Streamlit receives scan params via query string:
+#   ?scan=1&domain=example.com&methods=crtsh,brute&workers=3
+# ─────────────────────────────────────────
+
+params = st.query_params
+
+if params.get("scan") == "1":
+    domain = params.get("domain", "").strip().lower()
+    methods_raw = params.get("methods", "crtsh")
+    methods = [m.strip() for m in methods_raw.split(",") if m.strip()]
+    workers = int(params.get("workers", 3))
+
+    if domain and methods:
+        scan_data = run_scan(domain, methods, workers)
+        # Return JSON to the page
+        st.markdown(f"""
+<script>
+window.parent.postMessage({{
+  type: 'SUBSCAN_RESULT',
+  data: {json.dumps(scan_data)}
+}}, '*');
+</script>
+""", unsafe_allow_html=True)
+    st.stop()
+
+
+# ─────────────────────────────────────────
+# SERVE THE HTML FRONTEND
+# ─────────────────────────────────────────
+
+html_path = pathlib.Path(__file__).parent / "subscan.html"
+
+if html_path.exists():
+    html_content = html_path.read_text(encoding="utf-8")
+    components.html(html_content, height=1000, scrolling=True)
+else:
+    st.error("subscan.html not found. Make sure it is in the same folder as this file.")
+    st.code("Expected location: " + str(html_path))
