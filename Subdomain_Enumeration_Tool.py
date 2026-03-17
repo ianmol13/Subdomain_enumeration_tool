@@ -1,6 +1,5 @@
 # Subdomain_Enumeration_Tool.py
-# Serves the custom HTML/CSS/JS frontend via Streamlit
-# and handles real scan requests from the UI via st.query_params / component messaging
+# Serves the custom HTML/CSS/JS frontend via Streamlit and handles real scan requests from the UI via st.query_params / component messaging
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -14,9 +13,8 @@ import pathlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-# ─────────────────────────────────────────
 # PAGE CONFIG  — must be first Streamlit call
-# ─────────────────────────────────────────
+
 st.set_page_config(
     page_title="SubScan — Subdomain Enumeration",
     page_icon="◈",
@@ -35,9 +33,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ─────────────────────────────────────────
 # BACKEND SCAN FUNCTIONS
-# ─────────────────────────────────────────
 
 def get_subdomains_crtsh(domain: str) -> list:
     """Passive recon via crt.sh SSL certificate transparency logs."""
@@ -145,11 +141,7 @@ def run_scan(domain: str, methods: list, workers: int = 3) -> dict:
     return {"results": results, "logs": logs, "elapsed": round(elapsed, 1)}
 
 
-# ─────────────────────────────────────────
 # HANDLE SCAN REQUEST FROM FRONTEND
-# Streamlit receives scan params via query string:
-#   ?scan=1&domain=example.com&methods=crtsh,brute&workers=3
-# ─────────────────────────────────────────
 
 params = st.query_params
 
@@ -173,9 +165,7 @@ window.parent.postMessage({{
     st.stop()
 
 
-# ─────────────────────────────────────────
 # SERVE THE HTML FRONTEND
-# ─────────────────────────────────────────
 
 html_path = pathlib.Path(__file__).parent / "subscan.html"
 
