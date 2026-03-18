@@ -808,8 +808,15 @@ document.querySelectorAll('#pillRow .pill[data-src]').forEach(el => {
 
 // clock
 (function tick() {
-  const m = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
-  document.getElementById('clk').textContent = (m ? m[1] : '--:--:--') + ' UTC';
+  const now = new Date();
+  const ist = now.toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  document.getElementById('clk').textContent = ist + ' IST';
   setTimeout(tick, 1000);
 })();
 
