@@ -2,3 +2,4 @@ streamlit
 requests
 dnspython
 pandas
+urllib3
