@@ -43,7 +43,7 @@ streamlit run Subdomain_Enumeration_Tool.py
 
 ## Stack
 
-Python · dnspython · requests · Streamlit · vanilla HTML/CSS/JS
+Python · dnspython · requests · Streamlit · HTML/CSS/JS
 
 ---
 
