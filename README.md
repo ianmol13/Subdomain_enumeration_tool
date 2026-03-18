@@ -1,45 +1,50 @@
-# Subdomain_enumeration_tool
-Subdomain Enumeration Tool
+# SubScan — Subdomain Enumeration Tool
 
-This tool automates subdomain discovery using multiple techniques like crt.sh, Sublist3r, and brute force. It features a sleek, hacker-themed Streamlit dashboard for ease of use.
+![Python](https://img.shields.io/badge/python-3.9%2B-blue?style=flat-square)
+![Streamlit](https://img.shields.io/badge/deployed-streamlit%20cloud-ff4b4b?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-# Features
+A recon tool for subdomain discovery built for bug bounty and penetration testing. Queries 8 sources in parallel, resolves DNS records, probes live hosts, and scores each result by confidence.
 
-Passive & Active Enumeration: Uses APIs and wordlists.
+**Live:** `https://subdomainenumerationtool.streamlit.app`
 
-Multi-Domain Scanning: Scan multiple domains simultaneously.
+---
 
-Customizable Export: Download results as CSV or JSON.
+I built this because most subdomain tools either hit one source or dump a flat list with no context about what's actually alive. This does the full pipeline — enumerate, validate, enrich, score — in one shot.
 
-User-Friendly Interface: Hacker-themed UI with Streamlit.
+---
 
-## Installation
+## Sources
 
-# Clone the repository
+Runs all of these simultaneously and deduplicates results:
+
+crt.sh · HackerTarget · AlienVault OTX · VirusTotal · RapidDNS · BufferOver · Sublist3r · DNS brute-force
+
+---
+
+## What happens after enumeration
+
+- **Wildcard detection** — checks for wildcard DNS before brute-forcing so you don't end up with thousands of false positives
+- **DNS enrichment** — resolves A, AAAA, CNAME, MX, NS, TXT for every subdomain
+- **HTTP probing** — hits each live host, grabs status code, title, redirect chain, and detects technologies (nginx, Cloudflare, WordPress, AWS, etc.)
+- **Confidence score** — each result gets a 0–100 score based on how many sources found it, whether DNS resolves, and whether it responds over HTTP
+
+---
+
+## Setup
+
+```bash
 git clone https://github.com/ianmol13/Subdomain_enumeration_tool.git
 cd Subdomain_enumeration_tool
-
-# Install dependencies
 pip install -r requirements.txt
-
- ## Usage
-
 streamlit run Subdomain_Enumeration_Tool.py
+```
 
-## Techniques Used
 
-API Integration: crt.sh for passive enumeration.
+## Stack
 
-DNS Resolution: Uses dnspython to resolve subdomains.
+Python · dnspython · requests · Streamlit · vanilla HTML/CSS/JS
 
-Threading: Multithreading to enhance performance.
+---
 
- ## Dependencies
-
-Streamlit: Interactive web interface.
-
-dnspython: DNS queries.
-
-requests: HTTP requests.
-
-pandas: Data handling.
+Only scan domains you own or have written permission to test.
