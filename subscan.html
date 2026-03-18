@@ -1,922 +1,1235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SubScan</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root{
-  --bg:#080e12;
-  --surface:rgba(255,255,255,0.03);
-  --border:rgba(0,230,255,0.1);
-  --accent:#00e5ff;
-  --accent-glow:rgba(0,229,255,0.2);
-  --accent2:#40ffec;
-  --text:#d8f4f8;
-  --muted:rgba(200,240,248,0.35);
-  --danger:#ff4d6d;
-  --warn:#ffb020;
-  --mono:'DM Mono',monospace;
-  --display:'Bebas Neue',sans-serif;
-}
-
-html{height:100%}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--mono);
-  min-height:100vh;
-  overflow-x:hidden;
-  cursor:default;
+:root {
+  --bg: #080e12;
+  --surface: rgba(255,255,255,0.03);
+  --border: rgba(0,230,255,0.1);
+  --accent: #00e5ff;
+  --accent2: #40ffec;
+  --glow: rgba(0,229,255,0.2);
+  --text: #d8f4f8;
+  --muted: rgba(200,240,248,0.38);
+  --red: #ff4d6d;
+  --yellow: #ffb020;
+  --mono: 'DM Mono', monospace;
+  --head: 'Bebas Neue', sans-serif;
 }
 
-/* ── BACKGROUND ── */
-.bg-orb{
-  position:fixed;
-  border-radius:50%;
-  filter:blur(120px);
-  pointer-events:none;
-  z-index:0;
-}
-.orb1{width:600px;height:600px;top:-200px;left:-200px;background:rgba(0,229,255,0.07)}
-.orb2{width:500px;height:500px;bottom:-150px;right:-100px;background:rgba(64,255,236,0.05)}
-.orb3{width:300px;height:300px;top:40%;left:55%;background:rgba(0,180,220,0.05)}
-
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
-  pointer-events:none;z-index:0;
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* ── WRAPPER ── */
-.page{
-  position:relative;z-index:1;
-  max-width:860px;
-  margin:0 auto;
-  padding:48px 24px 80px;
-  display:flex;
-  flex-direction:column;
-  gap:32px;
+/* ambient background glow */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb-1 { width: 600px; height: 600px; top: -200px; left: -200px; background: rgba(0,229,255,0.07); }
+.orb-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: rgba(64,255,236,0.05); }
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* ── HEADER ── */
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-
-.wordmark{
-  font-family:var(--display);
-  font-size:5.5rem;
-  line-height:0.9;
-  letter-spacing:0.01em;
-  color:#fff;
-  text-shadow:0 0 60px rgba(0,229,255,0.45);
-  user-select:none;
-}
-.wordmark span{color:var(--accent)}
-
-.header-right{
-  text-align:right;
-  font-size:0.68rem;
-  color:var(--muted);
-  line-height:1.9;
-  padding-bottom:6px;
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.live-dot{
-  display:inline-block;
-  width:6px;height:6px;
-  border-radius:50%;
-  background:var(--accent2);
-  box-shadow:0 0 8px var(--accent2);
-  margin-right:5px;
-  animation:breathe 2s ease-in-out infinite;
+/* header */
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-@keyframes breathe{
-  0%,100%{opacity:1;box-shadow:0 0 8px var(--accent2)}
-  50%{opacity:0.4;box-shadow:0 0 2px var(--accent2)}
+h1 {
+  font-family: var(--head);
+  font-size: 5rem;
+  line-height: 0.9;
+  color: #fff;
+  text-shadow: 0 0 60px rgba(0,229,255,0.4);
+  user-select: none;
+}
+h1 em { color: var(--accent); font-style: normal; }
+
+.top-meta {
+  text-align: right;
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 2;
+  padding-bottom: 6px;
 }
 
-/* ── DIVIDER ── */
-.rule{
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  opacity:0.3;
+.dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  box-shadow: 0 0 8px var(--accent2);
+  margin-right: 5px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
-/* ── CARDS ── */
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:28px;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.25;
 }
 
-.card-title{
-  font-size:0.62rem;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-bottom:18px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.card-title::before{
-  content:'';
-  display:block;
-  width:18px;height:1px;
-  background:var(--accent);
-  box-shadow:0 0 6px var(--accent);
+/* cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  backdrop-filter: blur(16px);
 }
 
-/* ── DOMAIN INPUT ── */
-.domain-row{
-  display:flex;
-  gap:12px;
-  align-items:stretch;
+.card-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-label::before {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+  flex-shrink: 0;
 }
 
-.domain-input-wrap{
-  flex:1;
-  position:relative;
+/* scan input row */
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
 }
 
-.domain-input-wrap::before{
-  content:'›_';
-  position:absolute;
-  left:16px;top:50%;
-  transform:translateY(-50%);
-  color:var(--accent);
-  font-size:0.85rem;
-  pointer-events:none;
-  font-weight:500;
+.input-wrap {
+  flex: 1;
+  position: relative;
+}
+.input-wrap::before {
+  content: '›_';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: 0.82rem;
+  pointer-events: none;
 }
 
-input.domain-input{
-  width:100%;
-  background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);
-  border-radius:10px;
-  color:var(--text);
-  font-family:var(--mono);
-  font-size:0.85rem;
-  padding:14px 16px 14px 44px;
-  outline:none;
-  transition:border-color 0.2s,box-shadow 0.2s;
+input[type="text"].main-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 13px 14px 13px 42px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-input.domain-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-glow);
+input[type="text"].main-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
 }
-input.domain-input::placeholder{color:var(--muted)}
+input[type="text"].main-input::placeholder { color: var(--muted); }
 
-/* ── METHOD PILLS ── */
-.methods{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:16px;
+button.scan-btn {
+  background: var(--accent);
+  color: #04111a;
+  border: none;
+  border-radius: 9px;
+  font-family: var(--head);
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  padding: 0 28px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  min-width: 110px;
 }
-
-.method-pill{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 16px;
-  border-radius:99px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,0.03);
-  font-size:0.72rem;
-  color:var(--muted);
-  cursor:pointer;
-  transition:all 0.18s;
-  user-select:none;
+button.scan-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14), transparent);
 }
-.method-pill:hover{border-color:rgba(0,229,255,0.4);color:var(--text)}
-.method-pill.on{
-  border-color:var(--accent);
-  background:rgba(0,229,255,0.1);
-  color:var(--accent);
-  box-shadow:0 0 16px rgba(0,229,255,0.15);
+button.scan-btn:hover {
+  background: #1aedff;
+  box-shadow: 0 6px 28px rgba(0,229,255,0.38);
+  transform: translateY(-1px);
 }
-.pill-dot{
-  width:6px;height:6px;
-  border-radius:50%;
-  border:1px solid currentColor;
-  transition:background 0.18s;
-}
-.method-pill.on .pill-dot{background:currentColor}
-
-/* ── SCAN BUTTON ── */
-.btn-scan{
-  background:var(--accent);
-  color:#04111a;
-  border:none;
-  border-radius:10px;
-  font-family:var(--display);
-  font-size:1.3rem;
-  letter-spacing:0.08em;
-  padding:0 32px;
-  cursor:pointer;
-  transition:all 0.2s;
-  white-space:nowrap;
-  position:relative;
-  overflow:hidden;
-  min-width:130px;
-}
-.btn-scan::after{
-  content:'';
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
-}
-.btn-scan:hover{
-  background:#22eeff;
-  box-shadow:0 8px 32px rgba(0,229,255,0.45);
-  transform:translateY(-1px);
-}
-.btn-scan:active{transform:translateY(0);box-shadow:none}
-.btn-scan:disabled{
-  background:rgba(0,229,255,0.25);
-  cursor:not-allowed;
-  transform:none;
-  box-shadow:none;
+button.scan-btn:active { transform: none; box-shadow: none; }
+button.scan-btn:disabled {
+  background: rgba(0,229,255,0.22);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* ── PROGRESS ── */
-.progress-wrap{display:none;margin-top:20px}
-.progress-wrap.show{display:block}
-
-.progress-meta{
-  display:flex;
-  justify-content:space-between;
-  font-size:0.65rem;
-  color:var(--muted);
-  margin-bottom:8px;
+/* source pills */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
 }
 
-.progress-track{
-  height:2px;
-  background:rgba(255,255,255,0.06);
-  border-radius:99px;
-  overflow:hidden;
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.025);
+  font-size: 0.67rem;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+}
+.pill:hover { border-color: rgba(0,229,255,0.35); color: var(--text); }
+.pill.active {
+  border-color: var(--accent);
+  background: rgba(0,229,255,0.09);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,229,255,0.1);
+}
+.pill-circle {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.pill.active .pill-circle { background: currentColor; }
+.pill.square { border-radius: 7px; }
+
+.sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+
+/* progress */
+.progress { display: none; margin-top: 14px; }
+.progress.show { display: block; }
+.prog-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.prog-track {
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(0,229,255,0.5);
 }
 
-.progress-fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  border-radius:99px;
-  transition:width 0.4s ease;
-  box-shadow:0 0 12px rgba(0,229,255,0.55);
+/* stats grid */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 15px 12px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.stat-box.on { border-color: rgba(0,229,255,0.28); box-shadow: 0 3px 18px rgba(0,229,255,0.07); }
+.stat-box.green { border-color: rgba(64,255,236,0.3); box-shadow: 0 3px 18px rgba(64,255,236,0.08); }
+.stat-box.orange { border-color: rgba(255,176,32,0.35); box-shadow: 0 3px 18px rgba(255,176,32,0.09); }
+
+.stat-n {
+  font-family: var(--head);
+  font-size: 2.1rem;
+  line-height: 1;
+  color: #fff;
+  transition: color 0.25s;
+}
+.stat-box.on .stat-n { color: var(--accent); text-shadow: 0 0 16px rgba(0,229,255,0.35); }
+.stat-box.green .stat-n { color: var(--accent2); }
+.stat-box.orange .stat-n { color: var(--yellow); }
+
+.stat-label {
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
-/* ── STATS ROW ── */
-.stats-row{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
+/* wildcard warning */
+.wc-warn {
+  display: none;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 0.71rem;
+  background: rgba(255,176,32,0.07);
+  border: 1px solid rgba(255,176,32,0.3);
+  color: var(--yellow);
+}
+.wc-warn.show { display: block; }
+
+/* alert */
+.alert {
+  display: none;
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+}
+.alert.show { display: block; }
+.alert.err { background: rgba(255,77,109,0.09); border: 1px solid rgba(255,77,109,0.28); color: var(--red); }
+.alert.ok  { background: rgba(64,255,236,0.07); border: 1px solid rgba(64,255,236,0.22); color: var(--accent2); }
+
+/* results header */
+.results-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 13px;
+  flex-wrap: wrap;
+}
+.results-top .card-label { margin-bottom: 0; flex: 1; }
+
+input[type="text"].filter {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 6px 11px;
+  outline: none;
+  width: 160px;
+  transition: border-color 0.15s;
+}
+input[type="text"].filter:focus { border-color: var(--accent); }
+input[type="text"].filter::placeholder { color: var(--muted); }
+
+select.filter-sel {
+  background: #0a1318;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
 }
 
-.stat{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  transition:border-color 0.3s,box-shadow 0.3s;
-  backdrop-filter:blur(10px);
+.btn-s {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.67rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
-.stat.lit{
-  border-color:rgba(0,229,255,0.3);
-  box-shadow:0 4px 24px rgba(0,229,255,0.1);
-}
-.stat-n{
-  font-family:var(--display);
-  font-size:2.8rem;
-  line-height:1;
-  color:#fff;
-  transition:color 0.3s;
-}
-.stat.lit .stat-n{
-  color:var(--accent);
-  text-shadow:0 0 20px rgba(0,229,255,0.45);
-}
-.stat-k{
-  font-size:0.6rem;
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  color:var(--muted);
+.btn-s:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-s.del:hover { border-color: var(--red); color: var(--red); }
+
+/* table */
+.tbl-wrap {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 9px;
 }
 
-/* ── RESULTS ── */
-.results-header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:16px;
-  flex-wrap:wrap;
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
+
+thead { position: sticky; top: 0; background: #0a1318; z-index: 5; }
+thead th {
+  padding: 9px 11px;
+  text-align: left;
+  font-size: 0.57rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.results-header .card-title{margin-bottom:0;flex:1}
+thead th:hover { color: var(--accent); }
 
-.filter-input{
-  background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);
-  border-radius:8px;
-  color:var(--text);
-  font-family:var(--mono);
-  font-size:0.72rem;
-  padding:7px 12px;
-  outline:none;
-  width:180px;
-  transition:border-color 0.18s;
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: background 0.1s;
 }
-.filter-input:focus{border-color:var(--accent)}
-.filter-input::placeholder{color:var(--muted)}
+tbody tr:hover { background: rgba(0,229,255,0.04); }
+tbody tr.open { background: rgba(0,229,255,0.06); }
+tbody td { padding: 9px 11px; vertical-align: middle; }
 
-.btn-export{
-  background:transparent;
-  border:1px solid var(--border);
-  border-radius:8px;
-  color:var(--muted);
-  font-family:var(--mono);
-  font-size:0.7rem;
-  padding:7px 14px;
-  cursor:pointer;
-  transition:all 0.18s;
+.n-col { color: var(--muted); font-size: 0.6rem; width: 32px; }
+.host { color: var(--accent2); font-weight: 500; font-size: 0.77rem; }
+.page-title { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+.ip-col { color: var(--muted); font-size: 0.67rem; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
-.btn-export:hover{border-color:var(--accent2);color:var(--accent2)}
+.s200 { background: rgba(64,255,236,0.11); color: var(--accent2); }
+.s301, .s302 { background: rgba(255,176,32,0.1); color: var(--yellow); }
+.s403 { background: rgba(255,77,109,0.1); color: var(--red); }
+.s404 { background: rgba(200,240,248,0.05); color: var(--muted); }
+.s500 { background: rgba(255,77,109,0.14); color: var(--red); }
+.s-na { background: rgba(200,240,248,0.04); color: var(--muted); }
 
-/* ── TABLE ── */
-.table-shell{
-  max-height:360px;
-  overflow-y:auto;
-  border-radius:10px;
-  border:1px solid var(--border);
+.alive-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
 }
+.a-yes { background: var(--accent2); box-shadow: 0 0 5px var(--accent2); }
+.a-no  { background: rgba(200,240,248,0.18); }
 
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:99px}
+/* source tags */
+.src { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 0.57rem; text-transform: uppercase; font-weight: 500; margin: 1px; }
+.src-crtsh { background: rgba(0,229,255,0.11); color: #00e5ff; }
+.src-hackertarget { background: rgba(255,176,32,0.1); color: var(--yellow); }
+.src-alienvault { background: rgba(255,77,109,0.1); color: #ff8090; }
+.src-rapiddns { background: rgba(120,80,255,0.11); color: #b090ff; }
+.src-bufferover { background: rgba(0,255,180,0.09); color: #00ffb4; }
+.src-virustotal { background: rgba(80,160,255,0.11); color: #80c0ff; }
+.src-sublister { background: rgba(64,255,236,0.09); color: var(--accent2); }
+.src-brute { background: rgba(255,176,32,0.11); color: var(--yellow); }
 
-table{width:100%;border-collapse:collapse;font-size:0.76rem}
+.tech { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 0.57rem; background: rgba(255,255,255,0.055); color: var(--muted); margin: 1px; }
 
-thead{position:sticky;top:0;background:#0a1318;z-index:5}
-thead th{
-  padding:10px 14px;
-  text-align:left;
-  font-size:0.6rem;
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  color:var(--muted);
-  border-bottom:1px solid var(--border);
-  font-weight:400;
+/* confidence bar */
+.conf {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 75px;
 }
+.conf-bar { flex: 1; height: 2px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+.conf-fill { height: 100%; border-radius: 99px; }
+.c-hi  { background: var(--accent2); }
+.c-mid { background: var(--yellow); }
+.c-lo  { background: rgba(255,255,255,0.22); }
+.conf-num { font-size: 0.6rem; color: var(--muted); width: 26px; text-align: right; flex-shrink: 0; }
 
-tbody tr{
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  transition:background 0.12s;
+/* drawer */
+.drawer { display: none; }
+.drawer.open { display: table-row; }
+.drawer td {
+  padding: 0 11px 14px 44px !important;
+  background: rgba(0,229,255,0.025) !important;
 }
-tbody tr:hover{background:rgba(0,229,255,0.05)}
-tbody tr:last-child{border-bottom:none}
-tbody td{padding:9px 14px;vertical-align:middle}
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 9px;
+  padding-top: 10px;
+}
+.d-block {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 11px;
+}
+.d-title {
+  font-size: 0.56rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.d-val {
+  font-size: 0.7rem;
+  color: var(--text);
+  line-height: 1.7;
+  word-break: break-all;
+}
+.d-val .dim { color: var(--muted); display: inline-block; min-width: 46px; }
+.d-none { color: var(--muted); font-size: 0.67rem; }
 
-.td-idx{color:var(--muted);font-size:0.65rem;width:40px}
-.td-host{color:var(--accent2);font-weight:500;font-size:0.8rem}
-
-.src-tag{
-  display:inline-block;
-  padding:2px 9px;
-  border-radius:4px;
-  font-size:0.6rem;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  font-weight:500;
+/* empty */
+.empty {
+  padding: 55px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 2.2;
 }
-.src-crtsh{background:rgba(0,229,255,0.12);color:#00e5ff}
-.src-brute{background:rgba(255,176,32,0.12);color:var(--warn)}
-.src-sublister{background:rgba(64,255,236,0.1);color:#40ffec}
-
-/* ── EMPTY STATE ── */
-.empty{
-  padding:60px 20px;
-  text-align:center;
-  color:var(--muted);
-  font-size:0.78rem;
-  line-height:2;
-}
-.empty-glyph{
-  font-family:var(--display);
-  font-size:5rem;
-  display:block;
-  opacity:0.07;
-  margin-bottom:8px;
-  letter-spacing:0.1em;
-}
-
-/* ── ALERT ── */
-.alert{
-  padding:12px 16px;
-  border-radius:8px;
-  font-size:0.75rem;
-  margin-bottom:16px;
-  display:none;
-}
-.alert.show{display:block}
-.alert-err{background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:var(--danger)}
-.alert-ok{background:rgba(64,255,236,0.08);border:1px solid rgba(64,255,236,0.25);color:var(--accent2)}
-
-/* ── LOGS ── */
-.log-box{
-  max-height:200px;
-  overflow-y:auto;
-  padding:4px 0;
-}
-.log-entry{
-  display:flex;
-  gap:14px;
-  padding:5px 2px;
-  font-size:0.7rem;
-  line-height:1.4;
-  border-bottom:1px solid rgba(255,255,255,0.025);
-}
-.log-entry:last-child{border-bottom:none}
-.log-t{color:var(--muted);flex-shrink:0;min-width:75px}
-.log-m{flex:1}
-.log-ok{color:var(--accent2)}
-.log-err{color:var(--danger)}
-.log-info{color:var(--text)}
-.log-warn{color:var(--warn)}
-
-/* ── FOOTER ── */
-footer{
-  font-size:0.62rem;
-  color:var(--muted);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding-top:8px;
+.empty-bg {
+  font-family: var(--head);
+  font-size: 4rem;
+  display: block;
+  opacity: 0.05;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
 }
 
-/* ── ANIMATIONS ── */
-.page>*{animation:fadein 0.6s ease both}
-.page>*:nth-child(1){animation-delay:0s}
-.page>*:nth-child(2){animation-delay:0.05s}
-.page>*:nth-child(3){animation-delay:0.1s}
-.page>*:nth-child(4){animation-delay:0.15s}
-.page>*:nth-child(5){animation-delay:0.2s}
-.page>*:nth-child(6){animation-delay:0.25s}
-.page>*:nth-child(7){animation-delay:0.3s}
+/* bottom grid */
+.bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
-@keyframes fadein{
-  from{opacity:0;transform:translateY(12px)}
-  to{opacity:1;transform:none}
+/* logs */
+.log-wrap { max-height: 190px; overflow-y: auto; }
+.log-line {
+  display: flex;
+  gap: 11px;
+  padding: 4px 2px;
+  font-size: 0.67rem;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+.log-line:last-child { border-bottom: none; }
+.log-t { color: var(--muted); flex-shrink: 0; min-width: 70px; }
+.log-msg { flex: 1; }
+.l-ok { color: var(--accent2); }
+.l-err { color: var(--red); }
+.l-info { color: var(--text); }
+.l-warn { color: var(--yellow); }
+
+/* history */
+.history { display: flex; flex-direction: column; gap: 7px; max-height: 190px; overflow-y: auto; }
+.h-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all 0.14s;
+  font-size: 0.7rem;
+}
+.h-item:hover { border-color: var(--accent); background: rgba(0,229,255,0.04); }
+.h-domain { flex: 1; color: var(--accent2); font-weight: 500; }
+.h-meta { color: var(--muted); font-size: 0.62rem; text-align: right; line-height: 1.7; }
+.h-empty { color: var(--muted); font-size: 0.73rem; padding: 16px 0; text-align: center; }
+
+footer {
+  font-size: 0.59rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
 }
 
-/* ── RESPONSIVE ── */
-@media(max-width:640px){
-  .wordmark{font-size:3.5rem}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
-  .domain-row{flex-direction:column}
-  .btn-scan{padding:14px;width:100%}
-  .header-right{display:none}
+/* page load fade */
+.wrap > * { animation: up 0.5s ease both; }
+.wrap > *:nth-child(1) { animation-delay: 0ms; }
+.wrap > *:nth-child(2) { animation-delay: 40ms; }
+.wrap > *:nth-child(3) { animation-delay: 80ms; }
+.wrap > *:nth-child(4) { animation-delay: 110ms; }
+.wrap > *:nth-child(5) { animation-delay: 140ms; }
+.wrap > *:nth-child(6) { animation-delay: 165ms; }
+.wrap > *:nth-child(7) { animation-delay: 190ms; }
+.wrap > *:nth-child(8) { animation-delay: 215ms; }
+@keyframes up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 780px) {
+  h1 { font-size: 3.2rem; }
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .input-row { flex-direction: column; }
+  button.scan-btn { width: 100%; padding: 13px; }
+  .top-meta { display: none; }
+  .bottom { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
 <body>
 
-<!-- Background orbs -->
-<div class="bg-orb orb1"></div>
-<div class="bg-orb orb2"></div>
-<div class="bg-orb orb3"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
-<div class="page">
+<div class="wrap">
 
-  <!-- HEADER -->
-  <header>
-    <div class="wordmark">SUB<span>SCAN</span></div>
-    <div class="header-right">
-      <div><span class="live-dot"></span>SYSTEM ONLINE</div>
-      <div id="clock">-- : -- : --  UTC</div>
-      <div>RECON FRAMEWORK v2.0</div>
-    </div>
-  </header>
-
-  <div class="rule"></div>
-
-  <!-- ALERT -->
-  <div class="alert alert-err" id="alertBox"></div>
-
-  <!-- SCAN CARD -->
-  <div class="card">
-    <div class="card-title">Target &amp; Configuration</div>
-
-    <div class="domain-row">
-      <div class="domain-input-wrap">
-        <input class="domain-input" id="domainInput"
-          type="text" placeholder="example.com"
-          autocomplete="off" spellcheck="false"/>
-      </div>
-      <button class="btn-scan" id="scanBtn" onclick="startScan()">SCAN</button>
-    </div>
-
-    <!-- Method pills -->
-    <div class="methods">
-      <div class="method-pill on" id="pill-crtsh" onclick="togglePill(this,'crtsh')">
-        <div class="pill-dot"></div> crt.sh passive
-      </div>
-      <div class="method-pill" id="pill-brute" onclick="togglePill(this,'brute')">
-        <div class="pill-dot"></div> DNS brute-force
-      </div>
-      <div class="method-pill" id="pill-sublister" onclick="togglePill(this,'sublister')">
-        <div class="pill-dot"></div> Sublist3r
-      </div>
-    </div>
-
-    <!-- Progress -->
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-meta">
-        <span id="progressLabel">Scanning…</span>
-        <span id="progressPct">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
+  <div class="top">
+    <h1>SUB<em>SCAN</em></h1>
+    <div class="top-meta">
+      <div><span class="dot"></span>RECON ENGINE READY</div>
+      <div id="clk">--:--:-- UTC</div>
+      <div>8 sources · dns enrich · http probe</div>
     </div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat" id="s-found">
-      <div class="stat-n" id="n-found">0</div>
-      <div class="stat-k">Subdomains</div>
+  <div class="divider"></div>
+
+  <div id="alert" class="alert"></div>
+
+  <div id="wc" class="wc-warn">
+    ⚠ wildcard dns detected — brute-force results have been filtered against the wildcard IP
+  </div>
+
+  <!-- scan config -->
+  <div class="card">
+    <div class="card-label">Target</div>
+
+    <div class="input-row">
+      <div class="input-wrap">
+        <input type="text" class="main-input" id="target"
+          placeholder="example.com" autocomplete="off" spellcheck="false" />
+      </div>
+      <button class="scan-btn" id="scanBtn" onclick="go()">SCAN</button>
     </div>
-    <div class="stat" id="s-domains">
-      <div class="stat-n" id="n-domains">0</div>
-      <div class="stat-k">Domains</div>
+
+    <div class="pills" id="pillRow">
+      <div class="pill active" data-src="crtsh"><div class="pill-circle"></div>crt.sh</div>
+      <div class="pill active" data-src="hackertarget"><div class="pill-circle"></div>HackerTarget</div>
+      <div class="pill active" data-src="alienvault"><div class="pill-circle"></div>AlienVault</div>
+      <div class="pill" data-src="rapiddns"><div class="pill-circle"></div>RapidDNS</div>
+      <div class="pill" data-src="bufferover"><div class="pill-circle"></div>BufferOver</div>
+      <div class="pill" data-src="virustotal"><div class="pill-circle"></div>VirusTotal</div>
+      <div class="pill" data-src="sublister"><div class="pill-circle"></div>Sublist3r</div>
+      <div class="pill" data-src="brute"><div class="pill-circle"></div>Brute-force</div>
+      <div class="sep"></div>
+      <div class="pill square active" id="optEnrich"><div class="pill-circle"></div>DNS Enrich</div>
+      <div class="pill square active" id="optProbe"><div class="pill-circle"></div>HTTP Probe</div>
     </div>
-    <div class="stat" id="s-sources">
-      <div class="stat-n" id="n-sources">0</div>
-      <div class="stat-k">Sources</div>
-    </div>
-    <div class="stat" id="s-time">
-      <div class="stat-n" id="n-time">0s</div>
-      <div class="stat-k">Elapsed</div>
+
+    <div class="progress" id="prog">
+      <div class="prog-top">
+        <span id="progLabel">scanning...</span>
+        <span id="progPct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
     </div>
   </div>
 
-  <!-- RESULTS -->
+  <!-- stats -->
+  <div class="stats">
+    <div class="stat-box" id="sb-found">
+      <div class="stat-n" id="sn-found">0</div>
+      <div class="stat-label">Subdomains</div>
+    </div>
+    <div class="stat-box" id="sb-alive">
+      <div class="stat-n" id="sn-alive">0</div>
+      <div class="stat-label">Alive</div>
+    </div>
+    <div class="stat-box" id="sb-srcs">
+      <div class="stat-n" id="sn-srcs">0</div>
+      <div class="stat-label">Sources</div>
+    </div>
+    <div class="stat-box" id="sb-wc">
+      <div class="stat-n" id="sn-wc">—</div>
+      <div class="stat-label">Wildcard</div>
+    </div>
+    <div class="stat-box" id="sb-conf">
+      <div class="stat-n" id="sn-conf">—</div>
+      <div class="stat-label">Avg Score</div>
+    </div>
+    <div class="stat-box" id="sb-time">
+      <div class="stat-n" id="sn-time">0s</div>
+      <div class="stat-label">Elapsed</div>
+    </div>
+  </div>
+
+  <!-- results table -->
   <div class="card">
-    <div class="results-header">
-      <div class="card-title">Discovered Subdomains</div>
-      <input class="filter-input" id="filterInput"
-        type="text" placeholder="filter…" oninput="renderTable()"/>
-      <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+    <div class="results-top">
+      <div class="card-label">Results</div>
+      <input type="text" class="filter" id="fText" placeholder="filter..." oninput="render()" />
+      <select class="filter-sel" id="fSrc" onchange="render()">
+        <option value="">All Sources</option>
+        <option value="crtsh">crt.sh</option>
+        <option value="hackertarget">HackerTarget</option>
+        <option value="alienvault">AlienVault</option>
+        <option value="rapiddns">RapidDNS</option>
+        <option value="bufferover">BufferOver</option>
+        <option value="virustotal">VirusTotal</option>
+        <option value="sublister">Sublist3r</option>
+        <option value="brute">Brute-force</option>
+      </select>
+      <select class="filter-sel" id="fAlive" onchange="render()">
+        <option value="">All Hosts</option>
+        <option value="1">Alive Only</option>
+        <option value="0">Dead Only</option>
+      </select>
+      <button class="btn-s" onclick="dlCSV()">⬇ CSV</button>
+      <button class="btn-s" onclick="dlJSON()">⬇ JSON</button>
+      <button class="btn-s del" onclick="reset()">✕</button>
     </div>
 
-    <div class="table-shell">
-      <div class="empty" id="emptyState">
-        <span class="empty-glyph">SUBSCAN</span>
-        Enter a domain above and hit SCAN
+    <div class="tbl-wrap">
+      <div class="empty" id="empty">
+        <span class="empty-bg">SUBSCAN</span>
+        run a scan to see results here
       </div>
-      <table id="resultsTable" style="display:none">
+      <table id="tbl" style="display:none">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Subdomain</th>
-            <th>Source</th>
+            <th class="n-col">#</th>
+            <th onclick="sort('subdomain')">Subdomain ↕</th>
+            <th>Status</th>
+            <th onclick="sort('status')">HTTP ↕</th>
+            <th>IP</th>
+            <th>Sources</th>
+            <th>Tech</th>
+            <th onclick="sort('confidence')">Score ↕</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:9px;font-size:0.6rem;color:var(--muted)">
+      <span>click any row to expand dns + http details</span>
+      <span id="cnt">0 results</span>
+    </div>
   </div>
 
-  <!-- LOGS -->
-  <div class="card">
-    <div class="card-title">Activity Log</div>
-    <div class="log-box" id="logBox">
-      <div class="log-entry">
-        <span class="log-t">--:--:--</span>
-        <span class="log-m log-info">Awaiting target…</span>
+  <!-- logs + history -->
+  <div class="bottom">
+    <div class="card">
+      <div class="card-label">Log</div>
+      <div class="log-wrap" id="logWrap">
+        <div class="log-line">
+          <span class="log-t">--:--:--</span>
+          <span class="log-msg l-info">ready</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">History</div>
+      <div class="history" id="hist">
+        <div class="h-empty">nothing here yet</div>
       </div>
     </div>
   </div>
 
-  <div class="rule"></div>
+  <div class="divider"></div>
 
-  <!-- FOOTER -->
   <footer>
-    <span>Only scan systems you own or have explicit permission to test.</span>
-    <span id="resultCount">0 results</span>
+    <span>only scan systems you own or have written permission to test</span>
+    <span id="cnt2"></span>
   </footer>
 
-</div><!-- /page -->
+</div>
 
 <script>
-  
-/* STATE */
-  
-const S = {
-  rows: [],
-  methods: { crtsh: true, brute: false, sublister: false },
+const state = {
+  data: [],
   scanning: false,
   t0: null,
-  timerID: null,
+  ticker: null,
+  sortCol: 'confidence',
+  sortAsc: false,
+  openRow: null,
+  history: [],
+  sources: { crtsh:true, hackertarget:true, alienvault:true, rapiddns:false, bufferover:false, virustotal:false, sublister:false, brute:false },
 };
 
-/*  CLOCK */
-  
+// wire source pills
+document.querySelectorAll('#pillRow .pill[data-src]').forEach(el => {
+  el.addEventListener('click', () => {
+    el.classList.toggle('active');
+    state.sources[el.dataset.src] = el.classList.contains('active');
+  });
+});
+
+// clock
 (function tick() {
-  const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
-  document.getElementById('clock').textContent = (t ? t[1] : '--:--:--') + '  UTC';
+  const m = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
+  document.getElementById('clk').textContent = (m ? m[1] : '--:--:--') + ' UTC';
   setTimeout(tick, 1000);
 })();
 
-/* PILL TOGGLE */
-  
-function togglePill(el, key) {
-  el.classList.toggle('on');
-  S.methods[key] = el.classList.contains('on');
+function alert_(msg, type) {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = 'alert show ' + type;
+  setTimeout(() => el.classList.remove('show'), 5000);
 }
 
-/* ALERT */
-  
-function showAlert(msg, type = 'err') {
-  const box = document.getElementById('alertBox');
-  box.textContent = msg;
-  box.className = `alert alert-${type} show`;
-  setTimeout(() => box.classList.remove('show'), 4000);
+function log_(msg, type) {
+  const m = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
+  const box = document.getElementById('logWrap');
+  const d = document.createElement('div');
+  d.className = 'log-line';
+  d.innerHTML = `<span class="log-t">${m ? m[1] : '--:--:--'}</span><span class="log-msg l-${type}">${x(msg)}</span>`;
+  box.prepend(d);
+  if (box.children.length > 140) box.lastChild.remove();
 }
 
-/* LOG */
-  
-function addLog(msg, type = 'info') {
-  const t = new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
-  const ts = t ? t[1] : '--:--:--';
-  const box = document.getElementById('logBox');
-  const div = document.createElement('div');
-  div.className = 'log-entry';
-  div.innerHTML = `<span class="log-t">${ts}</span><span class="log-m log-${type}">${esc(msg)}</span>`;
-  box.prepend(div);
-  if (box.children.length > 120) box.lastChild.remove();
+function prog_(pct, label) {
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = Math.round(pct) + '%';
+  if (label) document.getElementById('progLabel').textContent = label;
 }
 
-/*  PROGRESS  */
-function setProgress(pct, label) {
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressPct').textContent = Math.round(pct) + '%';
-  if (label) document.getElementById('progressLabel').textContent = label;
+function statusBadge(code) {
+  if (!code) return '<span class="badge s-na">—</span>';
+  const cls = code === 200 ? 's200' : code === 301 || code === 302 ? 's301' : code === 403 ? 's403' : code === 404 ? 's404' : code >= 500 ? 's500' : 's-na';
+  return `<span class="badge ${cls}">${code}</span>`;
 }
 
-/*  RENDER TABLE */
-  
-function renderTable() {
-  const f = document.getElementById('filterInput').value.toLowerCase();
-  const rows = f ? S.rows.filter(r => r.sub.toLowerCase().includes(f)) : S.rows;
+function srcTags(srcs) {
+  return (srcs || []).map(s => `<span class="src src-${x(s)}">${x(s)}</span>`).join('');
+}
 
-  const empty = document.getElementById('emptyState');
-  const tbl   = document.getElementById('resultsTable');
+function techTags(t) {
+  if (!t || !t.length) return '<span class="d-none">—</span>';
+  return t.map(v => `<span class="tech">${x(v)}</span>`).join('');
+}
 
-  if (!S.rows.length) {
+function confBar(v) {
+  const cls = v >= 70 ? 'c-hi' : v >= 40 ? 'c-mid' : 'c-lo';
+  return `<div class="conf"><div class="conf-bar"><div class="conf-fill ${cls}" style="width:${v}%"></div></div><span class="conf-num">${v}</span></div>`;
+}
+
+function sort(col) {
+  state.sortAsc = state.sortCol === col ? !state.sortAsc : col !== 'confidence';
+  state.sortCol = col;
+  render();
+}
+
+function getRows() {
+  const ft = document.getElementById('fText').value.toLowerCase();
+  const fs = document.getElementById('fSrc').value;
+  const fa = document.getElementById('fAlive').value;
+  return state.data.filter(r => {
+    if (ft && !r.subdomain.toLowerCase().includes(ft)) return false;
+    if (fs && !(r.sources || []).includes(fs)) return false;
+    if (fa === '1' && !r.alive) return false;
+    if (fa === '0' && r.alive) return false;
+    return true;
+  });
+}
+
+function render() {
+  let rows = getRows();
+  rows.sort((a, b) => {
+    let av = a[state.sortCol] ?? '', bv = b[state.sortCol] ?? '';
+    if (typeof av === 'boolean') { av = av ? 1 : 0; bv = bv ? 1 : 0; }
+    if (typeof av === 'number') return state.sortAsc ? av - bv : bv - av;
+    return state.sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  });
+
+  const empty = document.getElementById('empty');
+  const tbl = document.getElementById('tbl');
+  if (!state.data.length) {
     empty.style.display = 'block';
-    tbl.style.display   = 'none';
+    tbl.style.display = 'none';
+    document.getElementById('cnt').textContent = '0 results';
+    document.getElementById('cnt2').textContent = '';
     return;
   }
 
   empty.style.display = 'none';
-  tbl.style.display   = 'table';
+  tbl.style.display = 'table';
 
-  document.getElementById('tbody').innerHTML = rows.map((r, i) => `
-    <tr>
-      <td class="td-idx">${i + 1}</td>
-      <td class="td-host">${esc(r.sub)}</td>
-      <td><span class="src-tag src-${esc(r.src)}">${esc(r.src)}</span></td>
-    </tr>`).join('');
+  document.getElementById('tbody').innerHTML = rows.flatMap((r, i) => {
+    const ip = (r.ip || []).join(', ') || (r.cname ? '→ ' + r.cname : '—');
+    const title = r.title ? `<div class="page-title">${x(r.title.slice(0, 44))}</div>` : '';
+    const adot = `<span class="alive-dot ${r.alive ? 'a-yes' : 'a-no'}"></span>`;
 
-  document.getElementById('resultCount').textContent =
-    rows.length + ' result' + (rows.length !== 1 ? 's' : '');
+    const main = `<tr onclick="expand(${i})" id="r${i}">
+      <td class="n-col">${i+1}</td>
+      <td><span class="host">${x(r.subdomain)}</span>${title}</td>
+      <td>${adot}${r.alive ? '<span style="color:var(--accent2);font-size:.67rem">alive</span>' : '<span style="color:var(--muted);font-size:.67rem">—</span>'}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td class="ip-col">${x(ip)}</td>
+      <td>${srcTags(r.sources)}</td>
+      <td>${techTags(r.tech)}</td>
+      <td>${confBar(r.confidence || 0)}</td>
+    </tr>`;
+
+    // detail drawer
+    const dnsA    = (r.ip   || []).join(', ') || '—';
+    const dnsAAAA = (r.ipv6 || []).join(', ') || '—';
+    const dnsCNAME= r.cname || '—';
+    const dnsMX   = (r.mx || []).join(', ') || '—';
+    const dnsNS   = (r.ns || []).join(', ') || '—';
+    const dnsTXT  = (r.txt || []).map(t => x(t.slice(0,90))).join('<br>') || '—';
+    const hurl    = r.url ? `<a href="${x(r.url)}" target="_blank" style="color:var(--accent)">${x(r.url.slice(0,55))}</a>` : '—';
+    const hms     = r.response_ms ? r.response_ms + 'ms' : '—';
+    const hredir  = r.redirect ? x(r.redirect.slice(0,55)) : '—';
+
+    const detail = `<tr class="drawer" id="d${i}">
+      <td colspan="8">
+        <div class="drawer-grid">
+          <div class="d-block">
+            <div class="d-title">DNS</div>
+            <div class="d-val">
+              <div><span class="dim">A</span>${x(dnsA)}</div>
+              <div><span class="dim">AAAA</span>${x(dnsAAAA)}</div>
+              <div><span class="dim">CNAME</span>${x(dnsCNAME)}</div>
+              <div><span class="dim">MX</span>${x(dnsMX)}</div>
+              <div><span class="dim">NS</span>${x(dnsNS)}</div>
+            </div>
+          </div>
+          <div class="d-block">
+            <div class="d-title">TXT Records</div>
+            <div class="d-val">${dnsTXT}</div>
+          </div>
+          <div class="d-block">
+            <div class="d-title">HTTP</div>
+            <div class="d-val">
+              <div><span class="dim">URL</span>${hurl}</div>
+              <div><span class="dim">Status</span>${r.status || '—'}</div>
+              <div><span class="dim">Time</span>${hms}</div>
+              <div><span class="dim">Redir</span>${hredir}</div>
+            </div>
+          </div>
+          <div class="d-block">
+            <div class="d-title">Tech Stack</div>
+            <div class="d-val">${techTags(r.tech)}</div>
+            <div class="d-title" style="margin-top:9px">Found By</div>
+            <div class="d-val">${srcTags(r.sources)}</div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+
+    return [main, detail];
+  }).join('');
+
+  // restore open drawer
+  if (state.openRow !== null) {
+    const dr = document.getElementById('d' + state.openRow);
+    const rr = document.getElementById('r' + state.openRow);
+    if (dr) { dr.classList.add('open'); rr && rr.classList.add('open'); }
+  }
+
+  const c = rows.length + (rows.length !== 1 ? ' results' : ' result');
+  document.getElementById('cnt').textContent = c;
+  document.getElementById('cnt2').textContent = c;
 }
 
-/*  STATS */
-function updateStats() {
-  const n       = S.rows.length;
-  const domains = new Set(S.rows.map(r => r.domain)).size;
-  const srcs    = new Set(S.rows.map(r => r.src)).size;
-
-  animNum('n-found',   n);
-  animNum('n-domains', domains);
-  animNum('n-sources', srcs);
-
-  ['s-found', 's-domains', 's-sources'].forEach(id =>
-    document.getElementById(id).classList.toggle('lit', n > 0)
-  );
+function expand(i) {
+  const dr = document.getElementById('d' + i);
+  const rr = document.getElementById('r' + i);
+  if (!dr) return;
+  if (state.openRow === i) {
+    dr.classList.remove('open'); rr && rr.classList.remove('open');
+    state.openRow = null;
+  } else {
+    if (state.openRow !== null) {
+      const old = document.getElementById('d' + state.openRow);
+      const oldr = document.getElementById('r' + state.openRow);
+      old && old.classList.remove('open'); oldr && oldr.classList.remove('open');
+    }
+    dr.classList.add('open'); rr && rr.classList.add('open');
+    state.openRow = i;
+  }
 }
 
-function animNum(id, target) {
-  const el  = document.getElementById(id);
+function updateStats(statsObj) {
+  const n = state.data.length;
+  const alive = state.data.filter(r => r.alive).length;
+  const srcs = new Set(state.data.flatMap(r => r.sources || [])).size;
+  const avgScore = n ? Math.round(state.data.reduce((a, r) => a + (r.confidence || 0), 0) / n) : null;
+
+  countUp('sn-found', n);
+  countUp('sn-alive', alive);
+  countUp('sn-srcs', srcs);
+
+  document.getElementById('sb-found').className = 'stat-box' + (n ? ' on' : '');
+  document.getElementById('sb-alive').className = 'stat-box' + (alive > 0 ? ' green' : '');
+  document.getElementById('sb-srcs').className  = 'stat-box' + (srcs > 0 ? ' on' : '');
+  document.getElementById('sb-conf').className  = 'stat-box' + (n ? ' on' : '');
+  document.getElementById('sn-conf').textContent = avgScore !== null ? avgScore + '%' : '—';
+
+  if (statsObj) {
+    const wcEl = document.getElementById('sn-wc');
+    const wcBox = document.getElementById('sb-wc');
+    if (statsObj.wildcard) {
+      wcEl.textContent = 'YES';
+      wcBox.className = 'stat-box orange';
+      document.getElementById('wc').classList.add('show');
+    } else {
+      wcEl.textContent = 'NO';
+      wcBox.className = 'stat-box green';
+    }
+  }
+}
+
+function countUp(id, target) {
+  const el = document.getElementById(id);
   const cur = parseInt(el.textContent) || 0;
   if (cur === target) return;
   const step = Math.max(1, Math.ceil(Math.abs(target - cur) / 8));
   el.textContent = Math.min(cur + step, target);
-  if (parseInt(el.textContent) < target) setTimeout(() => animNum(id, target), 40);
+  if (parseInt(el.textContent) < target) setTimeout(() => countUp(id, target), 40);
 }
 
-/*  EXPORT CSV  */
-function exportCSV() {
-  if (!S.rows.length) { showAlert('No results to export yet.', 'err'); return; }
-  const csv = 'Subdomain,Source,Domain\n' +
-    S.rows.map(r => `${r.sub},${r.src},${r.domain}`).join('\n');
+function dlCSV() {
+  if (!state.data.length) { alert_('nothing to export', 'err'); return; }
+  const rows = state.data.map(r =>
+    [r.subdomain, r.domain, (r.sources||[]).join(';'), (r.ip||[]).join(';'),
+     r.status||'', r.alive?'yes':'no', (r.title||'').replace(/,/g,' '),
+     (r.tech||[]).join(';'), r.confidence||0].join(',')
+  );
+  dl('Subdomain,Domain,Sources,IP,Status,Alive,Title,Tech,Confidence\n' + rows.join('\n'),
+     'subscan_' + Date.now() + '.csv', 'text/csv');
+  log_('exported ' + state.data.length + ' rows as CSV', 'ok');
+}
+
+function dlJSON() {
+  if (!state.data.length) { alert_('nothing to export', 'err'); return; }
+  dl(JSON.stringify(state.data, null, 2), 'subscan_' + Date.now() + '.json', 'application/json');
+  log_('exported as JSON', 'ok');
+}
+
+function dl(content, name, mime) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `subscan_${Date.now()}.csv`;
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = name;
   a.click();
-  addLog(`Exported ${S.rows.length} rows as CSV`, 'ok');
 }
 
-/*  
-SCAN — calls Streamlit Python backend
-via postMessage / query param approach
- */
-function startScan() {
-  const domain = document.getElementById('domainInput').value.trim().toLowerCase();
-  if (!domain) { showAlert('Enter a target domain first.', 'err'); return; }
-  if (S.scanning) return;
+function reset() {
+  state.data = []; state.openRow = null;
+  render(); updateStats(null);
+  ['sn-found','sn-alive','sn-srcs','sn-conf','sn-wc','sn-time'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = id === 'sn-time' ? '0s' : '—';
+  });
+  ['sb-found','sb-alive','sb-srcs','sb-conf','sb-wc','sb-time'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'stat-box';
+  });
+  document.getElementById('wc').classList.remove('show');
+}
 
-  const active = Object.entries(S.methods).filter(([, v]) => v).map(([k]) => k);
-  if (!active.length) { showAlert('Select at least one scan method.', 'err'); return; }
+function renderHistory() {
+  const el = document.getElementById('hist');
+  if (!state.history.length) {
+    el.innerHTML = '<div class="h-empty">nothing here yet</div>';
+    return;
+  }
+  el.innerHTML = state.history.map(h => `
+    <div class="h-item" onclick="document.getElementById('target').value='${x(h.domain)}'">
+      <div class="h-domain">${x(h.domain)}</div>
+      <div class="h-meta">${h.total} found · ${h.alive} alive<br>${h.elapsed}s</div>
+    </div>
+  `).join('');
+}
 
-  /* Reset */
-  S.rows = [];
-  S.scanning = true;
-  S.t0 = Date.now();
-  renderTable();
-  updateStats();
+// source weights for demo mode
+const SW = { crtsh:20, hackertarget:15, alienvault:15, rapiddns:10, bufferover:10, virustotal:15, sublister:10, brute:10 };
 
-  /* UI */
+function go() {
+  const domain = document.getElementById('target').value.trim().toLowerCase();
+  if (!domain) { alert_('enter a domain first', 'err'); return; }
+  if (state.scanning) return;
+
+  const active = Object.entries(state.sources).filter(([,v]) => v).map(([k]) => k);
+  if (!active.length) { alert_('pick at least one source', 'err'); return; }
+
+  const doEnrich = document.getElementById('optEnrich').classList.contains('active');
+  const doProbe  = document.getElementById('optProbe').classList.contains('active');
+
+  state.data = []; state.openRow = null; state.scanning = true; state.t0 = Date.now();
+  document.getElementById('wc').classList.remove('show');
+  render(); updateStats(null);
+
   const btn = document.getElementById('scanBtn');
-  btn.disabled   = true;
-  btn.textContent = '…';
-  document.getElementById('progressWrap').classList.add('show');
-  setProgress(5, 'Sending to backend…');
-  addLog(`Target: ${domain} | Methods: ${active.join(', ')}`, 'info');
+  btn.disabled = true; btn.textContent = '…';
+  document.getElementById('prog').classList.add('show');
+  prog_(5, 'connecting...');
+  log_('target: ' + domain, 'info');
+  log_('sources: ' + active.join(', '), 'info');
 
-  /* Elapsed timer */
-  S.timerID = setInterval(() => {
-    const s = ((Date.now() - S.t0) / 1000).toFixed(1);
-    document.getElementById('n-time').textContent = s + 's';
-    document.getElementById('s-time').classList.add('lit');
+  state.ticker = setInterval(() => {
+    const s = ((Date.now() - state.t0) / 1000).toFixed(1);
+    document.getElementById('sn-time').textContent = s + 's';
+    document.getElementById('sb-time').className = 'stat-box on';
   }, 300);
 
-  /*
-    HOW THE BACKEND CALL WORKS 
-    We are running inside a Streamlit components.html() iframe.
-    We communicate with Python by reloading the Streamlit app with query
-    params (?scan=1&domain=...&methods=...). The Python script detects
-    these params, runs the scan, and posts a message back via postMessage.
-    The listener below receives the JSON result and populates the UI.
-    This is the cleanest zero-dependency way to call Python from inside a Streamlit HTML component without needing a separate Flask server.
-   */
+  window.addEventListener('message', onResult, { once: true });
 
-  /* Listen for the result posted back from Python */
-  window.addEventListener('message', handleBackendResult, { once: true });
+  const p = new URLSearchParams({ scan:'1', domain, methods: active.join(','), workers:'10', enrich: doEnrich?'1':'0', probe: doProbe?'1':'0' });
+  window.parent.postMessage({ type: 'SUBSCAN_START', params: p.toString() }, '*');
 
-  /* Trigger the Python scan by navigating the parent Streamlit window */
-  const params = new URLSearchParams({
-    scan:    '1',
-    domain:  domain,
-    methods: active.join(','),
-    workers: '5',
-  });
-
-  /* Post to Streamlit parent to reload with these query params */
-  window.parent.postMessage({ type: 'SUBSCAN_START', params: params.toString() }, '*');
-
-  /* Fallback: if no backend available (standalone HTML), run demo after 800ms */
-  S._fallbackTimer = setTimeout(() => {
-    addLog('No backend response — running demo mode.', 'warn');
-    runDemo(domain, active);
-  }, 800);
+  // fallback to demo if backend doesn't respond
+  state._fallback = setTimeout(() => {
+    log_('no backend — demo mode', 'warn');
+    demo(domain, active);
+  }, 1000);
 }
 
-/*  HANDLE BACKEND RESULT (from Python)  */
-  
-function handleBackendResult(event) {
-  if (!event.data || event.data.type !== 'SUBSCAN_RESULT') return;
-  clearTimeout(S._fallbackTimer);
+function onResult(e) {
+  if (!e.data) return;
 
-  const data = event.data.data;
-
-  /* Populate results */
-  (data.results || []).forEach(r => {
-    S.rows.push({ sub: r.subdomain, src: r.source, domain: r.domain });
-  });
-
-  /* Populate logs */
-  (data.logs || []).forEach(line => {
-    const type = line.includes('ERROR') ? 'err'
-               : line.includes('complete') || line.includes('Scan complete') ? 'ok'
-               : 'info';
-    addLog(line, type);
-  });
-
-  renderTable();
-  updateStats();
-  finishScan(data.elapsed || 0);
-}
-
-/* 
-   DEMO MODE (runs when no backend)
-   Simulates results for UI preview / standalone HTML usage on GitHub Pages
- */
-  
-function runDemo(domain, methods) {
-  const wordlist = [
-    'www','mail','api','dev','staging','vpn','admin','portal','cdn',
-    'shop','blog','docs','git','ci','jenkins','test','uat','beta',
-    'secure','app','m','static','assets','auth','sso','smtp','webmail',
-    'ftp','backup','db','cloud','k8s','grafana','kibana','elastic',
-    'intranet','corp','sandbox','demo','preview','alpha','prod','legacy',
-    'ns1','ns2','mx','remote',
-  ];
-
-  const total = methods.length * wordlist.length;
-  let done = 0, mIdx = 0, wIdx = 0;
-
-  function step() {
-    if (mIdx >= methods.length) { finishScan(); return; }
-
-    const method = methods[mIdx];
-    const word   = wordlist[wIdx];
-    const sub    = `${word}.${domain}`;
-
-    if (Math.random() > 0.32 && !S.rows.find(r => r.sub === sub)) {
-      S.rows.push({ sub, src: method, domain });
-      renderTable();
-      updateStats();
-    }
-
-    done++;
-    setProgress((done / total) * 100, `[${method}] checking ${word}.${domain}`);
-
-    wIdx++;
-    if (wIdx >= wordlist.length) {
-      wIdx = 0;
-      addLog(`[${method}] scan complete on ${domain}`, 'ok');
-      mIdx++;
-    }
-
-    if (mIdx < methods.length) setTimeout(step, 22);
-    else finishScan();
+  if (e.data.type === 'SUBSCAN_HISTORY') {
+    state.history = e.data.data || [];
+    renderHistory();
+    return;
   }
 
+  if (e.data.type !== 'SUBSCAN_RESULT') return;
+  clearTimeout(state._fallback);
+
+  const d = e.data.data;
+  state.data = d.results || [];
+
+  (d.logs || []).forEach(line => {
+    const t = line.includes('ERROR') ? 'err'
+            : line.includes('complete') || line.includes('done') ? 'ok'
+            : line.includes('WARNING') || line.includes('wildcard') ? 'warn'
+            : 'info';
+    log_(line, t);
+  });
+
+  if (d.stats) {
+    state.history.unshift({
+      domain: document.getElementById('target').value.trim(),
+      total: d.stats.total || 0,
+      alive: d.stats.alive || 0,
+      elapsed: d.stats.elapsed || 0,
+      scanned_at: d.stats.scanned_at || '',
+    });
+    if (state.history.length > 20) state.history.pop();
+    renderHistory();
+  }
+
+  render();
+  updateStats(d.stats || null);
+  done_(d.elapsed || 0);
+}
+
+function demo(domain, methods) {
+  const words = ['www','mail','api','dev','staging','admin','portal','cdn','shop','blog',
+    'docs','git','ci','test','beta','app','static','auth','sso','smtp','backup',
+    'db','cloud','grafana','kibana','intranet','prod','ns1','ns2','mx'];
+  const techPool = [['nginx','cloudflare'],['apache'],['cloudflare'],['vercel'],
+    ['nginx','wordpress'],['iis'],['react'],[]];
+  const titPool = ['Home','Login','Admin','Dashboard','API','Status',null,null];
+
+  let mi = 0, wi = 0, done = 0;
+  const total = methods.length * words.length;
+
+  function step() {
+    if (mi >= methods.length) { done_(0); return; }
+    const m = methods[mi], w = words[wi], sub = w + '.' + domain;
+    if (Math.random() > 0.3 && !state.data.find(r => r.subdomain === sub)) {
+      const alive = Math.random() > 0.4;
+      const ip = alive ? [rndIP()] : [];
+      state.data.push({
+        subdomain: sub, domain, source: m, sources: [m],
+        confidence: Math.min(100, (SW[m]||10) + (ip.length?20:0) + (alive?20:0)),
+        ip, ipv6:[], cname:null, mx:[], ns:[], txt:[],
+        alive, status: alive ? [200,200,301,403][Math.floor(Math.random()*4)] : null,
+        url: alive ? 'https://' + sub : null, redirect:null,
+        title: alive ? titPool[Math.floor(Math.random()*titPool.length)] : null,
+        tech: alive ? techPool[Math.floor(Math.random()*techPool.length)] : [],
+        response_ms: alive ? Math.floor(Math.random()*700+50) : null,
+      });
+      render(); updateStats(null);
+    }
+    done++;
+    prog_((done/total)*100, '[' + m + '] ' + w + '.' + domain);
+    wi++;
+    if (wi >= words.length) { wi = 0; log_('[' + m + '] done', 'ok'); mi++; }
+    if (mi < methods.length) setTimeout(step, 28); else done_(0);
+  }
   setTimeout(step, 300);
 }
 
-/*  FINISH  */
-  
-function finishScan(elapsed) {
-  clearInterval(S.timerID);
-  S.scanning = false;
+function rndIP() {
+  return [Math.floor(Math.random()*200+20), Math.floor(Math.random()*255),
+          Math.floor(Math.random()*255), Math.floor(Math.random()*254)+1].join('.');
+}
 
-  const t = elapsed !== undefined
-    ? elapsed + 's'
-    : ((Date.now() - S.t0) / 1000).toFixed(1) + 's';
-
-  document.getElementById('n-time').textContent = t;
-  setProgress(100, 'Complete');
-
+function done_(elapsed) {
+  clearInterval(state.ticker);
+  state.scanning = false;
+  const t = elapsed ? elapsed + 's' : ((Date.now() - state.t0)/1000).toFixed(1) + 's';
+  document.getElementById('sn-time').textContent = t;
+  prog_(100, 'done');
   setTimeout(() => {
-    document.getElementById('progressWrap').classList.remove('show');
+    document.getElementById('prog').classList.remove('show');
     const btn = document.getElementById('scanBtn');
-    btn.disabled   = false;
-    btn.textContent = 'SCAN';
-  }, 1500);
-
-  addLog(`Done — ${S.rows.length} subdomains found in ${t}`, 'ok');
-  updateStats();
+    btn.disabled = false; btn.textContent = 'SCAN';
+  }, 1400);
+  log_(state.data.length + ' subdomains · ' + state.data.filter(r=>r.alive).length + ' alive · ' + t, 'ok');
 }
 
-/*  UTIL */
-function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+function x(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* Enter key triggers scan */
-document.getElementById('domainInput')
-  .addEventListener('keydown', e => { if (e.key === 'Enter') startScan(); });
+document.getElementById('target').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
 </script>
 </body>
 </html>
