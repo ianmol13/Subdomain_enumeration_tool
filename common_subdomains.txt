@@ -1,0 +1,9 @@
+www mail smtp pop imap webmail mx ns1 ns2 ns3 ns4 api api-v1 api-v2 rest
+graphql gateway proxy cdn static assets media img images video stream upload
+dev development staging stage uat qa test sandbox demo preview canary alpha
+beta preprod prod production live admin administrator manage dashboard panel
+console portal app webapp mobile m auth login sso oauth id identity accounts
+shop store cart checkout pay payments billing blog news forum help support docs
+wiki git gitlab jenkins ci cd grafana prometheus kibana elastic vpn remote rdp
+ssh bastion cloud k8s docker db database mysql postgres redis mongo backup ftp
+sftp intranet internal corp office hr finance legal status health monitor ops
